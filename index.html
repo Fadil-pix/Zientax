@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XI PPLG A</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+
+<!-- Firebase Wajib -->
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-app-compat.js"></script>
+
+<!--Firebase Pilihan-->
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.17.1/firebase-auth-compat.js"></script>
+
+<link rel="icon" type="image/png" href="Assets/logo.png">
+</head>
+<body data-theme="dark">
+
+  <!-- ============ TOP NAV ============ -->
+  <header class="topbar">
+    <div class="topbar__brand">
+      <span class="dot dot--red"></span><span class="dot dot--yellow"></span><span class="dot dot--green"></span>
+      <span class="brand__text">~/xi-pplg-a<span class="cursor">_</span></span>
+    </div>
+
+    <nav class="topbar__nav" id="mainNav">
+      <button class="navlink is-active" data-target="dashboard">dashboard</button>
+      <button class="navlink" data-target="tugas">tugas.log</button>
+      <button class="navlink" data-target="kalender">kalender.cal</button>
+      <button class="navlink" data-target="jadwal">jadwal.sh</button>
+      <button class="navlink" data-target="kas">kas.sh</button>
+    </nav>
+
+    <div class="topbar__actions">
+      <button class="icon-btn admin-badge" id="adminBadge" title="Login sebagai admin" aria-label="Login admin">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4 20c1.5-4 5-6 8-6s6.5 2 8 6"/></svg>
+        <span id="adminBadgeLabel">Login Admin</span>
+      </button>
+      <button class="icon-btn" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">
+        <svg id="iconSun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        <svg id="iconMoon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+      </button>
+      <button class="icon-btn navburger" id="navBurger" aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="app">
+
+    <!-- ============ DASHBOARD ============ -->
+    <section class="view is-active" id="view-dashboard">
+
+      <div class="hero">
+        <div class="hero__terminal">
+          <div class="term__bar">
+            <span class="dot dot--red"></span><span class="dot dot--yellow"></span><span class="dot dot--green"></span>
+            <span class="term__title">status.sh — kelas</span>
+          </div>
+          <div class="term__body">
+            <p class="term__line"><span class="term__prompt">$</span> zientax --kelas atas</p>
+            <h1 class="hero__title" id="greetText">Selamat datang,</h1>
+            <p class="hero__sub"><span class="accent">XI PPLG A</span> — Pengembangan Perangkat Lunak &amp; Gim, SMK Negeri 2 Klaten</p>
+
+            <div class="hero__meta">
+              <div class="meta__item">
+                <span class="meta__label">tahun_ajaran</span>
+                <span class="meta__value">2026/2027</span>
+              </div>
+              <div class="meta__item">
+                <span class="meta__label">ruang_teori</span>
+                <span class="meta__value">Ruang 3</span>
+              </div>
+              <div class="meta__item">
+                <span class="meta__label">lab_produktif</span>
+                <span class="meta__value">J1 · J2 · J3</span>
+              </div>
+              <div class="meta__item">
+                <span class="meta__label">blok_aktif</span>
+                <span class="meta__value">
+                  <select id="blokAktifSelect" class="inline-select">
+                    <option value="umum">Blok Umum</option>
+                    <option value="produktif">Blok Produktif</option>
+                  </select>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__side">
+          <div class="clock-card">
+            <span class="clock-card__label">waktu sekarang (WIB)</span>
+            <span class="clock-card__time" id="clockTime">00:00:00</span>
+            <span class="clock-card__date" id="clockDate">-</span>
+          </div>
+
+          <div class="status-card" id="statusCard">
+            <span class="status-card__label">
+              <span class="ping"></span> sedang berlangsung
+            </span>
+            <div class="status-card__body" id="statusBody">
+              <span class="status-card__subject">Memuat…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel__head">
+            <h3>Ringkasan Tugas</h3>
+            <span class="panel__tag">tugas.log</span>
+          </div>
+          <div class="stat-row" id="taskStats">
+            <div class="stat"><span class="stat__num" id="statBelum">0</span><span class="stat__label">Belum</span></div>
+            <div class="stat"><span class="stat__num" id="statSedang">0</span><span class="stat__label">Sedang</span></div>
+            <div class="stat"><span class="stat__num" id="statSelesai">0</span><span class="stat__label">Selesai</span></div>
+          </div>
+          <div id="upcomingDeadlines" class="upcoming-list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <h3>Agenda Terdekat</h3>
+            <span class="panel__tag">kalender.cal</span>
+          </div>
+          <div id="upcomingEvents" class="upcoming-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TUGAS ============ -->
+    <section class="view" id="view-tugas">
+      <div class="view-head">
+        <div>
+          <h2>Tracker Tugas &amp; PR</h2>
+          <p class="view-sub">Kelola tugas per mata pelajaran, geser status seiring progres pengerjaan.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary admin-only" id="openTaskModal">+ Tugas Baru</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <select id="filterSubject" class="select">
+          <option value="all">Semua Mapel</option>
+        </select>
+        <select id="sortDeadline" class="select">
+          <option value="deadline-asc">Deadline Terdekat</option>
+          <option value="deadline-desc">Deadline Terjauh</option>
+        </select>
+        <span class="filter-count" id="filterCount"></span>
+      </div>
+
+      <div class="kanban" id="kanban">
+        <div class="kanban__col" data-status="belum">
+          <div class="kanban__head"><span class="kanban__dot kanban__dot--belum"></span>Belum Dikerjakan <span class="kanban__count" id="countBelum">0</span></div>
+          <div class="kanban__list" id="listBelum"></div>
+        </div>
+        <div class="kanban__col" data-status="sedang">
+          <div class="kanban__head"><span class="kanban__dot kanban__dot--sedang"></span>Sedang Dikerjakan <span class="kanban__count" id="countSedang">0</span></div>
+          <div class="kanban__list" id="listSedang"></div>
+        </div>
+        <div class="kanban__col" data-status="selesai">
+          <div class="kanban__head"><span class="kanban__dot kanban__dot--selesai"></span>Selesai <span class="kanban__count" id="countSelesai">0</span></div>
+          <div class="kanban__list" id="listSelesai"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ KALENDER ============ -->
+    <section class="view" id="view-kalender">
+      <div class="view-head">
+        <div>
+          <h2>Kalender Akademik</h2>
+          <p class="view-sub">SMK Negeri 2 Klaten — Tahun Ajaran 2026/2027. Tanggal bersifat contoh, sesuaikan dengan kalender resmi sekolah.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary admin-only" id="openCalEventModal">+ Tambah Acara</button>
+        </div>
+      </div>
+
+      <div class="cal-wrap">
+        <div class="cal-card">
+          <div class="cal-nav">
+            <button class="icon-btn" id="calPrev">&larr;</button>
+            <h3 id="calMonthLabel">-</h3>
+            <button class="icon-btn" id="calNext">&rarr;</button>
+          </div>
+          <div class="cal-weekdays">
+            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <div class="cal-legend">
+          <h4>Keterangan</h4>
+          <div class="legend-item"><span class="legend-dot legend-dot--pts"></span>PTS</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--pas"></span>PAS / SAS</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--ukk"></span>Uji Kompetensi Keahlian</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--libur-semester"></span>Libur Semester</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--libur-nasional"></span>Libur Nasional</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--sekolah"></span>Kegiatan Sekolah</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--pribadi"></span>Acara Kelas / Pribadi</div>
+
+          <h4>Detail Bulan Ini</h4>
+          <div id="calEventDetail" class="cal-event-detail">Klik tanggal bertanda untuk lihat detail.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ JADWAL ============ -->
+    <section class="view" id="view-jadwal">
+      <div class="view-head">
+        <div>
+          <h2>Jadwal Pelajaran</h2>
+          <p class="view-sub">Sistem blok mingguan — Blok Umum (Ruang 3) &amp; Blok Produktif PPLG (Lab J1/J2/J3).</p>
+        </div>
+      </div>
+
+      <div class="blok-switch">
+        <button class="blok-btn is-active" data-blok="umum">Jadwal Blok Umum</button>
+        <button class="blok-btn" data-blok="produktif">Jadwal Blok Produktif</button>
+      </div>
+
+      <div class="badge-legend">
+        <span class="badge badge--teori">Teori</span>
+        <span class="badge badge--kejuruan">Kejuruan / Produktif</span>
+        <span class="badge badge--olahraga">Olahraga</span>
+        <span class="badge badge--khusus">Agenda Khusus</span>
+      </div>
+
+      <div class="jadwal-days" id="jadwalDays"></div>
+    </section>
+
+    <!-- ============ KAS KELAS ============ -->
+    <section class="view" id="view-kas">
+      <div class="view-head">
+        <div>
+          <h2>Kas Kelas</h2>
+          <p class="view-sub">Iuran kas kelas Rp10.000 per bulan per siswa. Klik nama siswa untuk membuka rincian &amp; menandai bulan yang sudah dibayar.</p>
+        </div>
+      </div>
+
+      <div class="stat-row kas-stats">
+        <div class="stat">
+          <span class="stat__num" id="kasTotalTerkumpul">Rp0</span>
+          <span class="stat__label">Total Iuran Terkumpul</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasLunasCount">0 / 0 siswa</span>
+          <span class="stat__label">Lunas Bulan Ini</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasTunggakanCount">0 bulan</span>
+          <span class="stat__label">Total Tunggakan Kelas</span>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="kasSearch" class="select" placeholder="Cari nama" style="flex:1; min-width:200px;">
+        <select id="kasFilterStatus" class="select">
+          <option value="all">Semua Siswa</option>
+          <option value="lunas">Lunas Bulan Ini</option>
+          <option value="tunggakan">Ada Tunggakan</option>
+        </select>
+        <span class="filter-count" id="kasFilterCount"></span>
+      </div>
+
+      <div class="kas-list" id="kasList"></div>
+
+      <div class="view-head" style="margin-top:36px;">
+        <div>
+          <h2>Buku Kas — Pemasukan &amp; Pengeluaran</h2>
+          <p class="view-sub">Catatan pemasukan lain (selain iuran bulanan) dan pengeluaran kas kelas. Saldo dihitung otomatis dari iuran + pemasukan lain − pengeluaran.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary admin-only" id="openKasTxModal">+ Transaksi</button>
+        </div>
+      </div>
+
+      <div class="stat-row kas-stats">
+        <div class="stat">
+          <span class="stat__num" id="kasSaldo">Rp0</span>
+          <span class="stat__label">Saldo Kas Saat Ini</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasTotalMasuk">Rp0</span>
+          <span class="stat__label">Pemasukan Lain</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasTotalKeluar">Rp0</span>
+          <span class="stat__label">Total Pengeluaran</span>
+        </div>
+      </div>
+
+      <div class="kas-tx-list" id="kasTxList"></div>
+    </section>
+
+  </main>
+
+  <!-- ============ MODAL: TAMBAH TUGAS ============ -->
+  <!-- ============ MODAL: LOGIN ADMIN ============ -->
+  <div class="modal-overlay" id="adminModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Login Admin</h3>
+        <button class="icon-btn" id="closeAdminModal">&times;</button>
+      </div>
+      <form id="adminForm" class="modal__form">
+        <label>
+          Email
+          <input type="email" id="adminEmail" required autocomplete="username">
+        </label>
+        <label>
+          Password
+          <input type="password" id="adminPassword" required autocomplete="current-password">
+        </label>
+        <p class="modal__error" id="adminError" style="display:none;"></p>
+        <button type="submit" class="btn btn--primary btn--block">Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: TUGAS BARU ============ -->
+  <div class="modal-overlay" id="taskModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tugas Baru</h3>
+        <button class="icon-btn" id="closeTaskModal">&times;</button>
+      </div>
+      <form id="taskForm" class="modal__form">
+        <label>
+          Mata Pelajaran
+          <select id="inputSubject" required></select>
+        </label>
+        <label>
+          Judul Tugas
+          <input type="text" id="inputTitle" placeholder="Contoh: Laporan Praktikum SaaS" required>
+        </label>
+        <div class="form-row">
+          <label>
+            Deadline
+            <input type="date" id="inputDeadline" required>
+          </label>
+          <label>
+            Tipe
+            <select id="inputType">
+              <option value="Individu">Individu</option>
+              <option value="Kelompok">Kelompok</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Keterangan
+          <textarea id="inputDesc" rows="3" placeholder="Detail tambahan, link, atau instruksi..."></textarea>
+        </label>
+        <label>
+          Foto Tugas / Catatan Materi (opsional, bisa pilih beberapa sekaligus)
+          <input type="file" id="inputPhoto" accept="image/*" multiple>
+        </label>
+        <div id="inputPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Tugas</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: TAMBAH ACARA KALENDER ============ -->
+  <div class="modal-overlay" id="calEventModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tambah Acara Kalender</h3>
+        <button class="icon-btn" id="closeCalEventModal">&times;</button>
+      </div>
+      <form id="calEventForm" class="modal__form">
+        <label>
+          Tanggal
+          <input type="date" id="calInputDate" required>
+        </label>
+        <label>
+          Judul Acara
+          <input type="text" id="calInputTitle" placeholder="Contoh: Rapat OSIS, Lomba Kelas, dll." required>
+        </label>
+        <label>
+          Jenis
+          <select id="calInputType">
+            <option value="pribadi">Acara Kelas / Pribadi</option>
+            <option value="sekolah">Kegiatan Sekolah</option>
+            <option value="pts">PTS</option>
+            <option value="pas">PAS / SAS</option>
+            <option value="ukk">Uji Kompetensi Keahlian</option>
+            <option value="libur-nasional">Libur Nasional</option>
+            <option value="libur-semester">Libur Semester</option>
+          </select>
+        </label>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Acara</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: TRANSAKSI KAS (PEMASUKAN/PENGELUARAN) ============ -->
+  <div class="modal-overlay" id="kasTxModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tambah Transaksi Kas</h3>
+        <button class="icon-btn" id="closeKasTxModal">&times;</button>
+      </div>
+      <form id="kasTxForm" class="modal__form">
+        <label>
+          Jenis
+          <select id="txType">
+            <option value="masuk">Pemasukan</option>
+            <option value="keluar">Pengeluaran</option>
+          </select>
+        </label>
+        <div class="form-row">
+          <label>
+            Tanggal
+            <input type="date" id="txDate" required>
+          </label>
+          <label>
+            Jumlah (Rp)
+            <input type="number" id="txAmount" min="0" step="100" required>
+          </label>
+        </div>
+        <label>
+          Keterangan
+          <input type="text" id="txDesc" placeholder="Contoh: Beli spidol &amp; penghapus" required>
+        </label>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Transaksi</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: FOTO TUGAS (TAMBAH/GANTI/HAPUS UNTUK TUGAS YANG SUDAH ADA) ============ -->
+  <div class="modal-overlay" id="taskPhotoModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Foto Tugas / Catatan Materi</h3>
+        <button class="icon-btn" id="closeTaskPhotoModal">&times;</button>
+      </div>
+      <form id="taskPhotoForm" class="modal__form">
+        <label>
+          Tambah Foto (bisa pilih beberapa sekaligus)
+          <input type="file" id="taskPhotoFile" accept="image/*" multiple>
+        </label>
+        <div id="taskPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Foto</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: LIGHTBOX LIHAT FOTO TUGAS ============ -->
+  <div class="modal-overlay" id="photoLightboxOverlay">
+    <div class="modal modal--photo">
+      <div class="modal__head">
+        <h3 id="photoLightboxTitle">Foto Tugas</h3>
+        <button class="icon-btn" id="closePhotoLightbox">&times;</button>
+      </div>
+      <div class="photo-lightbox__body">
+        <img id="photoLightboxImg" src="" alt="Foto tugas / catatan materi">
+        <div class="photo-lightbox__nav" id="photoLightboxNav" style="display:none;">
+          <button type="button" class="icon-btn" id="prevPhotoBtn" title="Foto sebelumnya">&#8249;</button>
+          <span id="photoLightboxCounter" class="photo-lightbox__counter"></span>
+          <button type="button" class="icon-btn" id="nextPhotoBtn" title="Foto berikutnya">&#8250;</button>
+        </div>
+        <p id="photoLightboxDesc" class="photo-lightbox__desc"></p>
+        <a class="btn btn--primary photo-lightbox__download" id="downloadPhotoBtn" download="foto-tugas.jpg" href="#">          Unduh Foto
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="script.js"></script>
+</body>
+</html>
