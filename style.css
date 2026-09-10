@@ -493,23 +493,27 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
    tapi tetap digenerate pada resolusi lebih tinggi di script.js supaya hasil
    unduhan/cetak label tetap tajam.
    Layout landscape: QR di kiri, label+keterangan+tombol di kanan — supaya
-   semua informasi kelihatan tanpa banyak scroll saat modal dibuka dari hasil scan. */
+   semua informasi kelihatan tanpa banyak scroll saat modal dibuka dari hasil
+   scan. Tetap landscape di HP (bukan cuma di layar lebar), QR & teks dikecilkan
+   bertahap seiring layar menyempit supaya tidak perlu berubah jadi kolom. */
 .qr-box{
-  display:flex; flex-direction:row; align-items:center; gap:16px;
-  padding:14px 16px; background:var(--bg-elev); border:1px solid var(--border-soft); border-radius:var(--radius);
+  display:flex; flex-direction:row; align-items:center; gap:12px;
+  padding:12px; background:var(--bg-elev); border:1px solid var(--border-soft); border-radius:var(--radius);
   max-width:100%; margin:0;
 }
-.qr-box__code{ background:#fff; padding:8px; border-radius:8px; line-height:0; flex:0 0 auto; }
+.qr-box__code{ background:#fff; padding:6px; border-radius:8px; line-height:0; flex:0 0 auto; }
 .qr-box__code canvas,
 .qr-box__code img{ width:88px !important; height:88px !important; display:block; }
-.qr-box__info{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-width:0; flex:1 1 auto; }
-.qr-box__label{ font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; }
-.qr-box__hint{ font-size:11px; color:var(--text-faint); text-align:left; max-width:none; line-height:1.5; }
-.qr-box__actions{ display:flex; gap:8px; flex-wrap:wrap; }
-@media (max-width: 420px){
-  .qr-box{ flex-direction:column; align-items:center; text-align:center; }
-  .qr-box__info{ align-items:center; }
-  .qr-box__hint{ text-align:center; }
+.qr-box__info{ display:flex; flex-direction:column; align-items:flex-start; gap:5px; min-width:0; flex:1 1 auto; }
+.qr-box__label{ font-family:var(--font-mono); font-size:10px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; }
+.qr-box__hint{ font-size:10.5px; color:var(--text-faint); text-align:left; max-width:none; line-height:1.4; }
+.qr-box__actions{ display:flex; gap:6px; flex-wrap:wrap; }
+@media (max-width: 360px){
+  .qr-box{ gap:8px; padding:10px; }
+  .qr-box__code{ padding:4px; }
+  .qr-box__code canvas,
+  .qr-box__code img{ width:64px !important; height:64px !important; }
+  .qr-box__label{ display:none; } /* teks judul disembunyikan duluan di layar sangat sempit, hint & tombol tetap keliatan */
 }
 
 /* Tombol eksplor website — mengajak pengunjung yang mendarat lewat scan QR
