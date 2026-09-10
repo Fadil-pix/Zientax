@@ -822,7 +822,7 @@ function closePlantDetailModal(){
    di website kelas (tugas, kalender, kas, taman, dsb). */
 function exploreWebsite(){
   closePlantDetailModal();
-  setActiveView('taman.sh');
+  setActiveView('dashboard');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
