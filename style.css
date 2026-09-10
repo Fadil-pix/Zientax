@@ -465,7 +465,7 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
 .badge--cyan{ background:var(--cyan-soft); color:var(--cyan); }
 
 /* ---------- Taman: Detail Tanaman + QR ---------- */
-.plant-detail__body{ padding:18px 20px 20px; display:flex; flex-direction:column; gap:12px; }
+.plant-detail__body{ padding:18px 20px 20px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; min-height:0; }
 .plant-detail__latin{ font-style:italic; color:var(--text-faint); font-size:13px; margin-top:-6px; }
 .plant-detail__tags{ display:flex; gap:6px; flex-wrap:wrap; }
 .plant-detail__desc{ font-size:13.5px; color:var(--text-dim); line-height:1.6; }
@@ -483,18 +483,26 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
 
 /* QR code sengaja dikecilkan secara visual (di bawah ukuran foto tanaman),
    tapi tetap digenerate pada resolusi lebih tinggi di script.js supaya hasil
-   unduhan/cetak label tetap tajam. */
+   unduhan/cetak label tetap tajam.
+   Layout landscape: QR di kiri, label+keterangan+tombol di kanan — supaya
+   semua informasi kelihatan tanpa banyak scroll saat modal dibuka dari hasil scan. */
 .qr-box{
-  display:flex; flex-direction:column; align-items:center; gap:8px;
-  padding:14px; background:var(--bg-elev); border:1px solid var(--border-soft); border-radius:var(--radius);
-  max-width:220px; margin:0 auto;
+  display:flex; flex-direction:row; align-items:center; gap:16px;
+  padding:14px 16px; background:var(--bg-elev); border:1px solid var(--border-soft); border-radius:var(--radius);
+  max-width:100%; margin:0;
 }
-.qr-box__label{ font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; }
-.qr-box__code{ background:#fff; padding:8px; border-radius:8px; line-height:0; }
+.qr-box__code{ background:#fff; padding:8px; border-radius:8px; line-height:0; flex:0 0 auto; }
 .qr-box__code canvas,
-.qr-box__code img{ width:110px !important; height:110px !important; display:block; }
-.qr-box__hint{ font-size:11px; color:var(--text-faint); text-align:center; max-width:320px; line-height:1.5; }
-.qr-box__actions{ display:flex; gap:8px; }
+.qr-box__code img{ width:88px !important; height:88px !important; display:block; }
+.qr-box__info{ display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-width:0; flex:1 1 auto; }
+.qr-box__label{ font-family:var(--font-mono); font-size:10.5px; color:var(--text-faint); text-transform:uppercase; letter-spacing:.05em; }
+.qr-box__hint{ font-size:11px; color:var(--text-faint); text-align:left; max-width:none; line-height:1.5; }
+.qr-box__actions{ display:flex; gap:8px; flex-wrap:wrap; }
+@media (max-width: 420px){
+  .qr-box{ flex-direction:column; align-items:center; text-align:center; }
+  .qr-box__info{ align-items:center; }
+  .qr-box__hint{ text-align:center; }
+}
 
 /* Tombol eksplor website — mengajak pengunjung yang mendarat lewat scan QR
    satu tanaman untuk melihat-lihat menu lain di website kelas. */
@@ -526,6 +534,8 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
   padding:16px 20px 20px;
   display:flex;
   flex-direction:column;
+  overflow-y:auto;
+  min-height:0;
 }
 .photo-lightbox__body img{ width:100%; max-height:70vh; object-fit:contain; border-radius:var(--radius-sm); background:var(--bg-elev); }
 .photo-lightbox__nav{
@@ -548,10 +558,16 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
   display:none; align-items:center; justify-content:center; z-index:100; padding:20px;
 }
 .modal-overlay.is-open{ display:flex; }
-.modal{ background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); width:100%; max-width:440px; box-shadow:var(--shadow); }
-.modal__head{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border); }
+.modal{
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); width:100%; max-width:440px; box-shadow:var(--shadow);
+  display:flex; flex-direction:column; max-height:calc(100vh - 40px); overflow:hidden;
+}
+.modal__head{
+  display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid var(--border);
+  flex:0 0 auto; position:sticky; top:0; background:var(--bg-card); z-index:2; border-radius:var(--radius) var(--radius) 0 0;
+}
 .modal__head h3{ font-size:15px; }
-.modal__form{ padding:18px 20px 20px; display:flex; flex-direction:column; gap:12px; }
+.modal__form{ padding:18px 20px 20px; display:flex; flex-direction:column; gap:12px; overflow-y:auto; min-height:0; }
 .modal__form label{ display:flex; flex-direction:column; gap:5px; font-size:12px; color:var(--text-dim); font-weight:600; }
 .form-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
