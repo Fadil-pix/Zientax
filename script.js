@@ -709,6 +709,17 @@ function handlePlantFormSubmit(e){
   const desc = document.getElementById('plantDesc').value.trim();
   if (!name) return;
 
+  // Firestore membatasi ukuran 1 dokumen maksimal ~1MB. Karena foto disimpan
+  // sebagai base64 langsung di field ini, cek dulu total ukurannya sebelum
+  // kirim — supaya kalau kelebihan, user langsung dikasih tahu jelas lewat
+  // alert, bukan diam-diam gagal tersimpan (fotonya sempat kelihatan di
+  // preview tapi hilang lagi begitu dibuka ulang).
+  const totalPhotoBytes = newPlantPhotos.reduce((sum, p) => sum + p.length, 0);
+  if (totalPhotoBytes > 700000){
+    alert('Total ukuran foto terlalu besar untuk disimpan (mendekati batas database). Kurangi jumlah foto atau pilih foto lain, lalu coba simpan lagi.');
+    return;
+  }
+
   const data = { name, latin, category, location, desc, photos: newPlantPhotos };
   const submitBtn = document.querySelector('#plantForm button[type="submit"]');
   submitBtn.disabled = true;
@@ -1087,25 +1098,47 @@ function nowMinutes(d){ return d.getHours()*60 + d.getMinutes(); }
 /* Kompres & resize foto di sisi browser sebelum disimpan sebagai data URL
    di Firestore (supaya ukuran dokumen tetap kecil, tanpa perlu setup
    Firebase Storage terpisah). */
-function compressImageFile(file, maxDim = 900){
+/* Target ukuran per foto sengaja dibuat kecil (jauh di bawah batas 1MB per
+   dokumen Firestore) karena foto disimpan sebagai base64 langsung di field
+   dokumen, dan satu tanaman bisa punya lebih dari satu foto sekaligus —
+   kalau tiap foto dibiarkan besar, total dokumen gampang melebihi batas
+   Firestore dan gagal tersimpan tanpa kelihatan jelas ke user. */
+const IMAGE_TARGET_BYTES = 200000; // ~200KB per foto (base64)
+
+function compressImageFile(file, maxDim = 700){
   return new Promise((resolve, reject)=>{
     const reader = new FileReader();
     reader.onload = (e)=>{
       const img = new Image();
       img.onload = ()=>{
         let { width, height } = img;
-        if (width > maxDim || height > maxDim){
-          if (width > height){ height = Math.round(height * maxDim / width); width = maxDim; }
-          else { width = Math.round(width * maxDim / height); height = maxDim; }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        let quality = 0.75;
-        let out = canvas.toDataURL('image/jpeg', quality);
-        while (out.length > 900000 && quality > 0.3){
-          quality -= 0.1;
-          out = canvas.toDataURL('image/jpeg', quality);
+
+        const renderAt = (dim)=>{
+          let w = width, h = height;
+          if (w > dim || h > dim){
+            if (w > h){ h = Math.round(h * dim / w); w = dim; }
+            else { w = Math.round(w * dim / h); h = dim; }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          let quality = 0.75;
+          let out = canvas.toDataURL('image/jpeg', quality);
+          while (out.length > IMAGE_TARGET_BYTES && quality > 0.35){
+            quality -= 0.1;
+            out = canvas.toDataURL('image/jpeg', quality);
+          }
+          return out;
+        };
+
+        // Coba di ukuran normal dulu; kalau setelah kualitas diturunkan
+        // habis-habisan tetap masih kegedean, perkecil dimensinya juga
+        // (bukan cuma kualitasnya) supaya hasil akhirnya tetap ringkas.
+        let out = renderAt(maxDim);
+        let dim = maxDim;
+        while (out.length > IMAGE_TARGET_BYTES && dim > 300){
+          dim = Math.round(dim * 0.75);
+          out = renderAt(dim);
         }
         resolve(out);
       };
