@@ -758,8 +758,13 @@ function openPlantDetailModal(id){
       btn.onclick = () => openPhotoLightbox(photos, Number(btn.dataset.idx), p.name, p.desc);
     });
   } else {
-    photoGrid.style.display = 'none';
-    photoGrid.innerHTML = '';
+    // Tetap tampilkan area ini dengan placeholder, bukan disembunyikan total,
+    // supaya jelas kalau tanaman ini memang belum ada fotonya (bukan error).
+    photoGrid.style.display = 'block';
+    photoGrid.innerHTML = `
+      <div class="plant-detail__photo-empty">
+        <span>Belum ada foto. Klik &quot;Edit&quot; untuk menambahkan foto tanaman ini.</span>
+      </div>`;
   }
 
   renderPlantQRCode(p);

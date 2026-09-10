@@ -488,6 +488,14 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
 .plant-detail__photo-grid.photo-grid .photo-grid__item img{
   position:absolute; inset:0;
 }
+.plant-detail__photo-empty{
+  width:100%; padding-top:32%; position:relative; border:1px dashed var(--border-soft);
+  border-radius:var(--radius-sm); background:var(--bg-elev);
+}
+.plant-detail__photo-empty span{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:var(--text-faint); font-size:12.5px; text-align:center; padding:0 12px;
+}
 
 /* QR code sengaja dikecilkan secara visual (di bawah ukuran foto tanaman),
    tapi tetap digenerate pada resolusi lebih tinggi di script.js supaya hasil
