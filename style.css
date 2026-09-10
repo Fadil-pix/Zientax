@@ -448,10 +448,7 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
 
 /* ---------- Taman: Daftar Tanaman ---------- */
 .plant-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(210px, 1fr)); gap:16px; }
-.plant-card{
-  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius);
-  overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column;
-}
+.plant-card{ background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow); display:flex; flex-direction:column;}
 .plant-card__photo{ position:relative; width:100%; aspect-ratio:var(--plant-photo-ratio, 4/3); background:var(--bg-elev); border:none; padding:0; }
 .plant-card__photo img{ width:100%; height:100%; object-fit:cover; display:block; }
 .plant-card__photo-empty{ display:flex; align-items:center; justify-content:center; width:100%; height:100%; color:var(--text-faint); font-size:11.5px; }
