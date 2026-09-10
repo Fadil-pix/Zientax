@@ -274,7 +274,7 @@ const SCHEDULE_UMUM = {
 /* ---------------------------------------------------------------------- */
 const SCHEDULE_PRODUKTIF = {
   senin: [
-    { jamStart:1, jamEnd:4,  subject:'SKJ', teacher:'—', room:'Lab J3', category:'kejuruan' },
+    { jamStart:1, jamEnd:4,  subject:'SKJ', teacher:'Riza Akbar, S.Kom (S06)', room:'Lab J3', category:'kejuruan' },
     { jamStart:5, jamEnd:7,  subject:'KIK', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
     { jamStart:8, jamEnd:10, subject:'SaaS', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
   ],
