@@ -181,7 +181,7 @@
       <div class="view-head">
         <div>
           <h2>Kalender Akademik</h2>
-          <p class="view-sub">SMK Negeri 2 Klaten — Tahun Ajaran 2026/2027. Tanggal bersifat contoh, sesuaikan dengan kalender resmi sekolah.</p>
+          <p class="view-sub">SMK Negeri 2 Klaten — Kalender Pendidikan Tahun Pelajaran 2025/2026 (sesuai kalender resmi sekolah).</p>
         </div>
         <div style="display:flex; gap:8px;">
           <button class="btn btn--primary admin-only" id="openCalEventModal">+ Tambah Acara</button>
@@ -203,11 +203,13 @@
 
         <div class="cal-legend">
           <h4>Keterangan</h4>
-          <div class="legend-item"><span class="legend-dot legend-dot--pts"></span>PTS</div>
-          <div class="legend-item"><span class="legend-dot legend-dot--pas"></span>PAS / SAS</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--pts"></span>Penilaian Sumatif Tengah Semester</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--pas"></span>Penilaian Sumatif Akhir Semester/Jenjang/Tahun</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--tka"></span>Tes Kemampuan Akademik (TKA)</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--an"></span>Asesmen Nasional (AN)</div>
           <div class="legend-item"><span class="legend-dot legend-dot--ukk"></span>Uji Kompetensi Keahlian</div>
           <div class="legend-item"><span class="legend-dot legend-dot--libur-semester"></span>Libur Semester</div>
-          <div class="legend-item"><span class="legend-dot legend-dot--libur-nasional"></span>Libur Nasional</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--libur-nasional"></span>Libur Umum / Nasional</div>
           <div class="legend-item"><span class="legend-dot legend-dot--sekolah"></span>Kegiatan Sekolah</div>
           <div class="legend-item"><span class="legend-dot legend-dot--pribadi"></span>Acara Kelas / Pribadi</div>
 
@@ -452,10 +454,12 @@
           <select id="calInputType">
             <option value="pribadi">Acara Kelas / Pribadi</option>
             <option value="sekolah">Kegiatan Sekolah</option>
-            <option value="pts">PTS</option>
-            <option value="pas">PAS / SAS</option>
+            <option value="pts">Penilaian Sumatif Tengah Semester</option>
+            <option value="pas">Penilaian Sumatif Akhir Semester/Jenjang/Tahun</option>
+            <option value="tka">Tes Kemampuan Akademik (TKA)</option>
+            <option value="an">Asesmen Nasional (AN)</option>
             <option value="ukk">Uji Kompetensi Keahlian</option>
-            <option value="libur-nasional">Libur Nasional</option>
+            <option value="libur-nasional">Libur Umum / Nasional</option>
             <option value="libur-semester">Libur Semester</option>
           </select>
         </label>
@@ -625,7 +629,7 @@
         </div>
         <p class="plant-detail__desc" id="plantDetailDesc"></p>
 
-        <div id="plantDetailPhotoGrid" class="photo-grid" style="display:none;"></div>
+        <div id="plantDetailPhotoGrid" class="photo-grid plant-detail__photo-grid" style="display:none;"></div>
 
         <div class="qr-box">
           <span class="qr-box__label">QR Code Label Tanaman</span>
@@ -636,6 +640,10 @@
             <button type="button" class="btn btn--sm btn--primary" id="printPlantQR">Cetak Label</button>
           </div>
         </div>
+
+        <button type="button" class="btn btn--sm btn--ghost plant-detail__explore" id="exploreWebsiteBtn">
+          🧭 Eksplor Website Kelas Lainnya
+        </button>
 
         <div class="plant-detail__actions admin-only">
           <button type="button" class="btn btn--sm" id="editPlantFromDetail">Edit Tanaman</button>
