@@ -589,6 +589,7 @@ select:focus, input:focus, textarea:focus{ outline:none; border-color:var(--ambe
   display:none; align-items:center; justify-content:center; z-index:100; padding:20px;
 }
 .modal-overlay.is-open{ display:flex; }
+#photoLightboxOverlay{ z-index:110; }
 .modal{
   background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius); width:100%; max-width:440px; box-shadow:var(--shadow);
   display:flex; flex-direction:column; max-height:calc(100vh - 40px); overflow:hidden;
