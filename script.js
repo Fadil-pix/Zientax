@@ -1599,11 +1599,17 @@ async function handleTaskPhotoFormSubmit(e){
 let lightboxPhotos = [];  // daftar foto tugas yang sedang dibuka di lightbox
 let lightboxIndex = 0;    // foto ke berapa yang sedang ditampilkan
 
-function openPhotoLightbox(photos, startIndex, title, desc){
+function openPhotoLightbox(photos, startIndex, title, desc, isLandscape = false){
   lightboxPhotos = photos || [];
   lightboxIndex = startIndex || 0;
   document.getElementById('photoLightboxTitle').textContent = title || 'Foto Tugas';
   document.getElementById('photoLightboxDesc').textContent = desc || '';
+
+  const modalEl = document.querySelector('#photoLightboxOverlay .modal');
+  if (modalEl){
+    modalEl.classList.toggle('modal--landscape', !!isLandscape);
+  }
+
   renderLightboxPhoto();
   document.getElementById('photoLightboxOverlay').classList.add('is-open');
 }
@@ -1645,6 +1651,8 @@ function closePhotoLightbox(){
   document.getElementById('photoLightboxOverlay').classList.remove('is-open');
   document.getElementById('photoLightboxImg').src = '';
   document.getElementById('downloadPhotoBtn').href = '#';
+  const modalEl = document.querySelector('#photoLightboxOverlay .modal');
+  if (modalEl) modalEl.classList.remove('modal--landscape');
   lightboxPhotos = [];
   lightboxIndex = 0;
 }
@@ -2318,7 +2326,7 @@ function init(){
     heroEl.addEventListener('click', (e)=>{
       if (e.target.closest('#editSambutanBtn')) return;
       if (tamanSambutan && tamanSambutan.photo){
-        openPhotoLightbox([tamanSambutan.photo], 0, tamanSambutan.title || 'Foto Taman Kelas', tamanSambutan.caption || '');
+        openPhotoLightbox([tamanSambutan.photo], 0, tamanSambutan.title || 'Foto Taman Kelas', tamanSambutan.caption || '', true);
       }
     });
   }
