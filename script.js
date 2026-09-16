@@ -503,15 +503,23 @@ function renderTamanSambutan(){
   document.getElementById('tamanHeroCaption').textContent = tamanSambutan.caption ||
     'Belum ada sambutan. Admin dapat menambahkan foto & sambutan taman lewat tombol "Edit Sambutan".';
   const photoEl = document.getElementById('tamanHeroPhoto');
-  const photoBtnEl = document.getElementById('tamanHeroPhotoBtn');
+  const heroEl = document.getElementById('tamanHero');
   const placeholderEl = document.getElementById('tamanHeroPlaceholder');
   if (tamanSambutan.photo){
     photoEl.src = tamanSambutan.photo;
-    photoBtnEl.style.display = 'block';
+    photoEl.style.display = 'block';
     placeholderEl.style.display = 'none';
+    if (heroEl){
+      heroEl.classList.add('has-photo');
+      heroEl.title = 'Klik untuk melihat foto penuh';
+    }
   } else {
-    photoBtnEl.style.display = 'none';
+    photoEl.style.display = 'none';
     placeholderEl.style.display = 'flex';
+    if (heroEl){
+      heroEl.classList.remove('has-photo');
+      heroEl.removeAttribute('title');
+    }
   }
 }
 
@@ -2305,11 +2313,15 @@ function init(){
   });
   document.getElementById('sambutanForm').addEventListener('submit', handleSambutanFormSubmit);
   document.getElementById('sambutanPhoto').addEventListener('change', handleSambutanPhotoChange);
-  document.getElementById('tamanHeroPhotoBtn').addEventListener('click', ()=>{
-    if (tamanSambutan.photo){
-      openPhotoLightbox([tamanSambutan.photo], 0, tamanSambutan.title || 'Foto Taman Kelas', tamanSambutan.caption || '');
-    }
-  });
+  const heroEl = document.getElementById('tamanHero');
+  if (heroEl){
+    heroEl.addEventListener('click', (e)=>{
+      if (e.target.closest('#editSambutanBtn')) return;
+      if (tamanSambutan && tamanSambutan.photo){
+        openPhotoLightbox([tamanSambutan.photo], 0, tamanSambutan.title || 'Foto Taman Kelas', tamanSambutan.caption || '');
+      }
+    });
+  }
 
   // Daftar Tanaman
   renderPlantGrid(); // render awal (kosong) sebelum data Firestore masuk
