@@ -312,7 +312,9 @@
 
       <!-- Sambutan dengan foto taman -->
       <div class="taman-hero" id="tamanHero">
-        <img class="taman-hero__photo" id="tamanHeroPhoto" src="" alt="Foto Taman Kelas" style="display:none;">
+        <button type="button" class="taman-hero__photo-btn" id="tamanHeroPhotoBtn" title="Klik untuk lihat foto penuh" style="display:none;">
+          <img class="taman-hero__photo" id="tamanHeroPhoto" src="" alt="Foto Taman Kelas">
+        </button>
         <div class="taman-hero__placeholder" id="tamanHeroPlaceholder">
           <span>Belum ada foto sambutan taman.</span>
         </div>
@@ -622,14 +624,18 @@
         <button class="icon-btn" id="closePlantDetailModal">&times;</button>
       </div>
       <div class="plant-detail__body">
+        <!-- Foto utama tanaman (di atas, sebelum info teks) -->
+        <div id="plantDetailMainPhoto" class="plant-detail__main-photo" style="display:none;">
+          <img id="plantDetailMainImg" src="" alt="Foto Tanaman">
+        </div>
+        <div id="plantDetailPhotoGrid" class="photo-grid plant-detail__photo-grid" style="display:none;"></div>
+
         <p class="plant-detail__latin" id="plantDetailLatin"></p>
         <div class="plant-detail__tags">
           <span class="badge badge--sage" id="plantDetailCategory"></span>
           <span class="badge badge--cyan" id="plantDetailLocation"></span>
         </div>
         <p class="plant-detail__desc" id="plantDetailDesc"></p>
-
-        <div id="plantDetailPhotoGrid" class="photo-grid plant-detail__photo-grid" style="display:none;"></div>
 
         <div class="qr-box">
           <div id="plantQRCode" class="qr-box__code"></div>

@@ -503,13 +503,14 @@ function renderTamanSambutan(){
   document.getElementById('tamanHeroCaption').textContent = tamanSambutan.caption ||
     'Belum ada sambutan. Admin dapat menambahkan foto & sambutan taman lewat tombol "Edit Sambutan".';
   const photoEl = document.getElementById('tamanHeroPhoto');
+  const photoBtnEl = document.getElementById('tamanHeroPhotoBtn');
   const placeholderEl = document.getElementById('tamanHeroPlaceholder');
   if (tamanSambutan.photo){
     photoEl.src = tamanSambutan.photo;
-    photoEl.style.display = 'block';
+    photoBtnEl.style.display = 'block';
     placeholderEl.style.display = 'none';
   } else {
-    photoEl.style.display = 'none';
+    photoBtnEl.style.display = 'none';
     placeholderEl.style.display = 'flex';
   }
 }
@@ -758,19 +759,39 @@ function openPlantDetailModal(id){
   document.getElementById('plantDetailDesc').textContent = p.desc || 'Belum ada keterangan.';
 
   const photos = getPhotos(p);
+  const mainPhotoEl = document.getElementById('plantDetailMainPhoto');
+  const mainImgEl = document.getElementById('plantDetailMainImg');
   const photoGrid = document.getElementById('plantDetailPhotoGrid');
+
   if (photos.length){
-    photoGrid.style.display = 'grid';
-    photoGrid.innerHTML = photos.map((src, idx) => `
-      <button type="button" class="photo-grid__item" data-idx="${idx}" style="border:none; padding:0; cursor:pointer;">
-        <img src="${src}" alt="Foto ${escapeHTML(p.name)} ${idx+1}">
-      </button>`).join('');
-    photoGrid.querySelectorAll('.photo-grid__item').forEach(btn=>{
-      btn.onclick = () => openPhotoLightbox(photos, Number(btn.dataset.idx), p.name, p.desc);
-    });
+    // Foto utama besar di atas
+    mainImgEl.src = photos[0];
+    mainImgEl.alt = `Foto ${escapeHTML(p.name)}`;
+    mainPhotoEl.style.display = 'block';
+    mainPhotoEl.style.cursor = 'zoom-in';
+    mainPhotoEl.onclick = () => openPhotoLightbox(photos, 0, p.name, p.desc);
+
+    // Grid thumbnail (hanya tampil kalau lebih dari 1 foto)
+    if (photos.length > 1){
+      photoGrid.style.display = 'grid';
+      photoGrid.innerHTML = photos.map((src, idx) => `
+        <button type="button" class="photo-grid__item" data-idx="${idx}" style="border:none; padding:0; cursor:pointer;">
+          <img src="${src}" alt="Foto ${escapeHTML(p.name)} ${idx+1}">
+        </button>`).join('');
+      photoGrid.querySelectorAll('.photo-grid__item').forEach(btn=>{
+        btn.onclick = () => {
+          // Update foto utama & buka lightbox
+          const idx = Number(btn.dataset.idx);
+          mainImgEl.src = photos[idx];
+          openPhotoLightbox(photos, idx, p.name, p.desc);
+        };
+      });
+    } else {
+      photoGrid.style.display = 'none';
+      photoGrid.innerHTML = '';
+    }
   } else {
-    // Tetap tampilkan area ini dengan placeholder, bukan disembunyikan total,
-    // supaya jelas kalau tanaman ini memang belum ada fotonya (bukan error).
+    mainPhotoEl.style.display = 'none';
     photoGrid.style.display = 'block';
     photoGrid.innerHTML = `
       <div class="plant-detail__photo-empty">
@@ -2284,6 +2305,11 @@ function init(){
   });
   document.getElementById('sambutanForm').addEventListener('submit', handleSambutanFormSubmit);
   document.getElementById('sambutanPhoto').addEventListener('change', handleSambutanPhotoChange);
+  document.getElementById('tamanHeroPhotoBtn').addEventListener('click', ()=>{
+    if (tamanSambutan.photo){
+      openPhotoLightbox([tamanSambutan.photo], 0, tamanSambutan.title || 'Foto Taman Kelas', tamanSambutan.caption || '');
+    }
+  });
 
   // Daftar Tanaman
   renderPlantGrid(); // render awal (kosong) sebelum data Firestore masuk
