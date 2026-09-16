@@ -83,7 +83,7 @@ function updateAdminUI(user){
   const label = document.getElementById('adminBadgeLabel');
   const badge = document.getElementById('adminBadge');
   if (isAdmin){
-    label.textContent = `Admin (${user.email}) · Keluar`;
+    label.textContent = `Admin · Keluar`;
     badge.title = 'Klik untuk logout';
   } else {
     label.textContent = 'Login Admin';
