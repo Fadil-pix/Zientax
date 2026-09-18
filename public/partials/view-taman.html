@@ -1,0 +1,57 @@
+    <!-- ============ TAMAN ============ -->
+    <section class="view" id="view-taman">
+
+      <!-- Sambutan dengan foto taman -->
+      <div class="taman-hero" id="tamanHero">
+        <img class="taman-hero__photo" id="tamanHeroPhoto" src="" alt="Foto Taman Kelas" style="display:none;">
+        <div class="taman-hero__placeholder" id="tamanHeroPlaceholder">
+          <span>Belum ada foto sambutan taman.</span>
+        </div>
+        <div class="taman-hero__overlay"></div>
+        <button type="button" class="btn btn--sm admin-only taman-hero__edit" id="editSambutanBtn">Edit Sambutan</button>
+        <div class="taman-hero__text">
+          <h2 class="taman-hero__title" id="tamanHeroTitle">Selamat Datang di Taman Kelas</h2>
+          <p class="taman-hero__caption" id="tamanHeroCaption">Program taman kelas yang bertujuan untuk mengasah keterampilan dan semangat kebersamaan siswa.</p>
+        </div>
+      </div>
+
+      <!-- Daftar Tanaman -->
+      <div class="view-head" style="margin-top:32px;">
+        <div>
+          <h2>Daftar Tanaman</h2>
+          <p class="view-sub">Koleksi tanaman di taman kelas, lengkap dengan QR Code yang bisa dicetak dan ditempel di tiap tanaman.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary admin-only" id="openPlantModal">+ Tanaman Baru</button>
+        </div>
+      </div>
+
+      <div class="plant-grid" id="plantGrid"></div>
+
+      <!-- Kegiatan Selasa Asri -->
+      <div class="view-head" style="margin-top:36px;">
+        <div>
+          <h2>Kegiatan "Selasa Asri"</h2>
+          <p class="view-sub">Dokumentasi kegiatan bersih-bersih &amp; perawatan taman tiap Selasa pagi. Semua siswa bisa unggah dokumentasi (bisa lebih dari 1 foto).</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary" id="openKegiatanModal">+ Tambah Kegiatan</button>
+        </div>
+      </div>
+
+      <div class="activity-list" id="selasaAsriList"></div>
+
+      <!-- Piket Harian -->
+      <div class="view-head" style="margin-top:36px;">
+        <div>
+          <h2>Piket Harian Taman</h2>
+          <p class="view-sub">Catatan piket harian merawat taman (menyiram, menyiangi, membersihkan). Petugas piket bisa unggah dokumentasi (bisa lebih dari 1 foto).</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary" id="openPiketModal">+ Tambah Piket</button>
+        </div>
+      </div>
+
+      <div class="activity-list" id="piketHarianList"></div>
+
+    </section>

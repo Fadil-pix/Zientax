@@ -1,0 +1,81 @@
+    <!-- ============ DASHBOARD ============ -->
+    <section class="view is-active" id="view-dashboard">
+
+      <div class="hero">
+        <div class="hero__terminal">
+          <div class="term__bar">
+            <span class="dot dot--red"></span><span class="dot dot--yellow"></span><span class="dot dot--green"></span>
+            <span class="term__title">status.sh — kelas</span>
+          </div>
+          <div class="term__body">
+            <p class="term__line"><span class="term__prompt">$</span> zientax --kelas atas</p>
+            <h1 class="hero__title" id="greetText">Selamat datang,</h1>
+            <p class="hero__sub"><span class="accent">XI PPLG A</span> — Pengembangan Perangkat Lunak &amp; Gim, SMK Negeri 2 Klaten</p>
+
+            <div class="hero__meta">
+              <div class="meta__item">
+                <span class="meta__label">tahun_ajaran</span>
+                <span class="meta__value">2026/2027</span>
+              </div>
+              <div class="meta__item">
+                <span class="meta__label">ruang_teori</span>
+                <span class="meta__value">Ruang 3</span>
+              </div>
+              <div class="meta__item">
+                <span class="meta__label">lab_produktif</span>
+                <span class="meta__value">J1 · J2 · J3</span>
+              </div>
+              <div class="meta__item">
+                <span class="meta__label">blok_aktif</span>
+                <span class="meta__value">
+                  <select id="blokAktifSelect" class="inline-select">
+                    <option value="umum">Blok Umum</option>
+                    <option value="produktif">Blok Produktif</option>
+                  </select>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero__side">
+          <div class="clock-card">
+            <span class="clock-card__label">waktu sekarang (WIB)</span>
+            <span class="clock-card__time" id="clockTime">00:00:00</span>
+            <span class="clock-card__date" id="clockDate">-</span>
+          </div>
+
+          <div class="status-card" id="statusCard">
+            <span class="status-card__label">
+              <span class="ping"></span> sedang berlangsung
+            </span>
+            <div class="status-card__body" id="statusBody">
+              <span class="status-card__subject">Memuat…</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <div class="panel">
+          <div class="panel__head">
+            <h3>Ringkasan Tugas</h3>
+            <span class="panel__tag">tugas.log</span>
+          </div>
+          <div class="stat-row" id="taskStats">
+            <div class="stat"><span class="stat__num" id="statBelum">0</span><span class="stat__label">Belum</span></div>
+            <div class="stat"><span class="stat__num" id="statSedang">0</span><span class="stat__label">Sedang</span></div>
+            <div class="stat"><span class="stat__num" id="statSelesai">0</span><span class="stat__label">Selesai</span></div>
+          </div>
+          <div id="upcomingDeadlines" class="upcoming-list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__head">
+            <h3>Agenda Terdekat</h3>
+            <span class="panel__tag">kalender.cal</span>
+          </div>
+          <div id="upcomingEvents" class="upcoming-list"></div>
+        </div>
+      </div>
+    </section>

@@ -1,0 +1,42 @@
+    <!-- ============ KALENDER ============ -->
+    <section class="view" id="view-kalender">
+      <div class="view-head">
+        <div>
+          <h2>Kalender Akademik</h2>
+          <p class="view-sub">SMK Negeri 2 Klaten — Kalender Pendidikan Tahun Pelajaran 2025/2026 (sesuai kalender resmi sekolah).</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary admin-only" id="openCalEventModal">+ Tambah Acara</button>
+        </div>
+      </div>
+
+      <div class="cal-wrap">
+        <div class="cal-card">
+          <div class="cal-nav">
+            <button class="icon-btn" id="calPrev">&larr;</button>
+            <h3 id="calMonthLabel">-</h3>
+            <button class="icon-btn" id="calNext">&rarr;</button>
+          </div>
+          <div class="cal-weekdays">
+            <span>Min</span><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span>
+          </div>
+          <div class="cal-grid" id="calGrid"></div>
+        </div>
+
+        <div class="cal-legend">
+          <h4>Keterangan</h4>
+          <div class="legend-item"><span class="legend-dot legend-dot--pts"></span>Penilaian Sumatif Tengah Semester</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--pas"></span>Penilaian Sumatif Akhir Semester/Jenjang/Tahun</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--tka"></span>Tes Kemampuan Akademik (TKA)</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--an"></span>Asesmen Nasional (AN)</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--ukk"></span>Uji Kompetensi Keahlian</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--libur-semester"></span>Libur Semester</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--libur-nasional"></span>Libur Umum / Nasional</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--sekolah"></span>Kegiatan Sekolah</div>
+          <div class="legend-item"><span class="legend-dot legend-dot--pribadi"></span>Acara Kelas / Pribadi</div>
+
+          <h4>Detail Bulan Ini</h4>
+          <div id="calEventDetail" class="cal-event-detail">Klik tanggal bertanda untuk lihat detail.</div>
+        </div>
+      </div>
+    </section>

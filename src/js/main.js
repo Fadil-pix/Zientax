@@ -2,59 +2,28 @@
    XI PPLG A — SMKN 2 Klaten — class site logic
    Data disusun dari jadwal blok umum & produktif kelas XI PPLG A serta
    kodifikasi guru SMKN 2 Klaten 2025/2026.
+
+   Entry point utama aplikasi. File-file pendukung:
+   - firebase-config.js   -> init Firebase & referensi koleksi Firestore
+   - data/schedule-data.js -> data jam pelajaran & jadwal (umum/produktif)
+   - data/calendar-data.js -> data kalender akademik
+   - partials-loader.js   -> menyuntik HTML partial dari /public/partials
    ========================================================================== */
 
-/* ---------------------------------------------------------------------- */
-/* 0a. FIREBASE (database bersama) — Tugas, Kas, dan Acara Kalender        */
-/*     disimpan di Firestore supaya semua siswa lihat data yang sama.      */
-/*     Tema & blok aktif tetap disimpan lokal (preferensi per-perangkat).  */
-/*                                                                          */
-/*  CARA SETUP (sekali saja):                                              */
-/*  1. Buka https://console.firebase.google.com -> Add project             */
-/*  2. Di project baru: Build -> Firestore Database -> Create database     */
-/*     -> pilih lokasi asia-southeast2 (Jakarta) -> mulai di test mode     */
-/*  3. Project settings (ikon gerigi) -> General -> scroll ke "Your apps"  */
-/*     -> klik ikon web </> -> daftarkan app -> copy object firebaseConfig */
-/*  4. Tempel object tsb menggantikan firebaseConfig di bawah ini          */
-/*  5. (Opsional tapi disarankan) atur Firestore Rules, lihat catatan di   */
-/*     bagian bawah file ini / README.                                    */
-/* ---------------------------------------------------------------------- */
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
+import { db, auth, colTasks, colCalEvents, colKas, colKasTx,
+  colTamanSettings, colTamanPlants, colTamanKegiatan, colTamanPiket
+} from './firebase-config.js';
 import {
-  getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc,
-  onSnapshot, query, orderBy, getDocs
+  doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 import {
-  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged
+  signInWithEmailAndPassword, signOut, onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
-
-// TODO: ganti dengan firebaseConfig milikmu sendiri dari Firebase Console
-const firebaseConfig = {
-  apiKey: "AIzaSyC9--urH7kmLPjOuNtjC6WKa9Wx6XjcG4s",
-  authDomain: "zientax-b93cc.firebaseapp.com",
-  projectId: "zientax-b93cc",
-  storageBucket: "zientax-b93cc.firebasestorage.app",
-  messagingSenderId: "55660481725",
-  appId: "1:55660481725:web:4ff5aae3a80d14cab27bd4"
-};
-
-
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
-const auth = getAuth(firebaseApp);
-
-const colTasks = collection(db, 'tasks');
-const colCalEvents = collection(db, 'calendarEvents');
-const colKas = collection(db, 'kasPayments');
-const colKasTx = collection(db, 'kasTransactions');
-
-// Menu Taman: katalog tanaman dikelola admin (seperti tugas), sedangkan
-// kegiatan "Selasa Asri" & "Piket Harian" boleh diunggah siapa saja tanpa
-// login (lihat SETUP-DATABASE.md bagian Rules untuk aturan Firestore-nya).
-const colTamanSettings = collection(db, 'tamanSettings');
-const colTamanPlants = collection(db, 'tamanPlants');
-const colTamanKegiatan = collection(db, 'tamanKegiatan');
-const colTamanPiket = collection(db, 'tamanPiket');
+import {
+  TIME_SLOTS, DAY_LABELS, DAY_ORDER, JS_DAY_TO_KEY,
+  SCHEDULE_UMUM, SCHEDULE_PRODUKTIF, SCHEDULES, getAllSubjects
+} from './data/schedule-data.js';
+import { CALENDAR_EVENTS, CAL_TYPE_LABEL } from './data/calendar-data.js';
 
 /* ---------------------------------------------------------------------- */
 /* 0b. ADMIN LOGIN (Firebase Authentication)                              */
@@ -66,17 +35,24 @@ const colTamanPiket = collection(db, 'tamanPiket');
 /* ---------------------------------------------------------------------- */
 let isAdmin = false;
 
-onAuthStateChanged(auth, (user)=>{
-  isAdmin = !!user;
-  updateAdminUI(user);
-  renderTasks();
-  renderCalendar();
-  renderKas();
-  renderKasTx();
-  renderPlantGrid();
-  renderSelasaAsriList();
-  renderPiketHarianList();
-});
+// Catatan: pendaftaran listener ini dipanggil dari init() (bukan langsung di
+// sini), supaya baru jalan SETELAH semua HTML partial selesai disuntikkan
+// ke DOM oleh partials-loader.js. Kalau didaftarkan langsung di top-level
+// modul, callback-nya bisa saja tertembak duluan sebelum elemen seperti
+// #adminBadgeLabel ada di halaman.
+function registerAuthListener(){
+  onAuthStateChanged(auth, (user)=>{
+    isAdmin = !!user;
+    updateAdminUI(user);
+    renderTasks();
+    renderCalendar();
+    renderKas();
+    renderKasTx();
+    renderPlantGrid();
+    renderSelasaAsriList();
+    renderPiketHarianList();
+  });
+}
 
 function updateAdminUI(user){
   document.body.classList.toggle('is-admin', isAdmin);
@@ -144,237 +120,6 @@ function storageAvailable(){
   } catch(e){ return false; }
 }
 const HAS_STORAGE = storageAvailable();
-
-/* ---------------------------------------------------------------------- */
-/* 1. STRUKTUR JAM PELAJARAN (per hari)                                    */
-/* ---------------------------------------------------------------------- */
-const TIME_SLOTS = {
-  senin: [
-    { type:'special', label:'Upacara Bendera', start:'07:00', end:'07:40' },
-    { type:'jam', jam:1,  start:'07:40', end:'08:20' },
-    { type:'jam', jam:2,  start:'08:20', end:'09:00' },
-    { type:'jam', jam:3,  start:'09:00', end:'09:40' },
-    { type:'break', label:'Istirahat 1', start:'09:40', end:'09:55' },
-    { type:'jam', jam:4,  start:'09:55', end:'10:35' },
-    { type:'jam', jam:5,  start:'10:35', end:'11:15' },
-    { type:'jam', jam:6,  start:'11:15', end:'11:55' },
-    { type:'break', label:'Istirahat 2 (Ishoma)', start:'11:55', end:'12:45' },
-    { type:'jam', jam:7,  start:'12:45', end:'13:25' },
-    { type:'jam', jam:8,  start:'13:25', end:'14:05' },
-    { type:'jam', jam:9,  start:'14:05', end:'14:45' },
-    { type:'jam', jam:10, start:'14:45', end:'15:20' },
-  ],
-  selasa: [
-    { type:'special', label:'Selasa Asri', start:'07:00', end:'07:40' },
-    { type:'jam', jam:1,  start:'07:40', end:'08:20' },
-    { type:'jam', jam:2,  start:'08:20', end:'09:00' },
-    { type:'jam', jam:3,  start:'09:00', end:'09:40' },
-    { type:'break', label:'Istirahat 1', start:'09:40', end:'09:55' },
-    { type:'jam', jam:4,  start:'09:55', end:'10:30' },
-    { type:'jam', jam:5,  start:'10:30', end:'11:05' },
-    { type:'jam', jam:6,  start:'11:05', end:'11:40' },
-    { type:'break', label:'Istirahat 2 (Ishoma)', start:'11:40', end:'12:30' },
-    { type:'jam', jam:7,  start:'12:30', end:'13:05' },
-    { type:'jam', jam:8,  start:'13:05', end:'13:40' },
-    { type:'jam', jam:9,  start:'13:40', end:'14:15' },
-    { type:'jam', jam:10, start:'14:15', end:'14:50' },
-    { type:'jam', jam:11, start:'14:50', end:'15:25' },
-  ],
-  rabu: [
-    { type:'jam', jam:1,  start:'07:00', end:'07:40' },
-    { type:'jam', jam:2,  start:'07:40', end:'08:20' },
-    { type:'jam', jam:3,  start:'08:20', end:'09:00' },
-    { type:'jam', jam:4,  start:'09:00', end:'09:40' },
-    { type:'break', label:'Istirahat 1', start:'09:40', end:'09:55' },
-    { type:'jam', jam:5,  start:'09:55', end:'10:35' },
-    { type:'jam', jam:6,  start:'10:35', end:'11:15' },
-    { type:'jam', jam:7,  start:'11:15', end:'11:55' },
-    { type:'break', label:'Istirahat 2 (Ishoma)', start:'11:55', end:'12:45' },
-    { type:'jam', jam:8,  start:'12:45', end:'13:25' },
-    { type:'jam', jam:9,  start:'13:25', end:'14:05' },
-    { type:'jam', jam:10, start:'14:05', end:'14:45' },
-    { type:'jam', jam:11, start:'14:45', end:'15:20' },
-  ],
-  // Kamis pakai struktur sama dengan Rabu. Blok Umum kelas ini berhenti di
-  // jam ke-10, sedangkan Blok Produktif memakai jam ke-11.
-  kamis: [
-    { type:'jam', jam:1,  start:'07:00', end:'07:40' },
-    { type:'jam', jam:2,  start:'07:40', end:'08:20' },
-    { type:'jam', jam:3,  start:'08:20', end:'09:00' },
-    { type:'jam', jam:4,  start:'09:00', end:'09:40' },
-    { type:'break', label:'Istirahat 1', start:'09:40', end:'09:55' },
-    { type:'jam', jam:5,  start:'09:55', end:'10:35' },
-    { type:'jam', jam:6,  start:'10:35', end:'11:15' },
-    { type:'jam', jam:7,  start:'11:15', end:'11:55' },
-    { type:'break', label:'Istirahat 2 (Ishoma)', start:'11:55', end:'12:45' },
-    { type:'jam', jam:8,  start:'12:45', end:'13:25' },
-    { type:'jam', jam:9,  start:'13:25', end:'14:05' },
-    { type:'jam', jam:10, start:'14:05', end:'14:45' },
-    { type:'jam', jam:11, start:'14:45', end:'15:20' },
-  ],
-  jumat: [
-    { type:'special', label:'Jumat Karakter', start:'07:00', end:'07:35' },
-    { type:'jam', jam:1,  start:'07:35', end:'08:10' },
-    { type:'jam', jam:2,  start:'08:10', end:'08:45' },
-    { type:'jam', jam:3,  start:'08:45', end:'09:20' },
-    { type:'break', label:'Istirahat 1', start:'09:20', end:'09:35' },
-    { type:'jam', jam:4,  start:'09:35', end:'10:10' },
-    { type:'jam', jam:5,  start:'10:10', end:'10:45' },
-    { type:'jam', jam:6,  start:'10:45', end:'11:20' },
-    { type:'jam', jam:7,  start:'11:20', end:'11:55' },
-    { type:'break', label:'Istirahat Sholat Jumat', start:'11:55', end:'12:45' },
-    { type:'jam', jam:8,  start:'12:45', end:'13:20' },
-    { type:'jam', jam:9,  start:'13:20', end:'13:55' },
-  ],
-};
-
-const DAY_LABELS = { senin:'Senin', selasa:'Selasa', rabu:'Rabu', kamis:'Kamis', jumat:'Jumat' };
-const DAY_ORDER = ['senin','selasa','rabu','kamis','jumat'];
-const JS_DAY_TO_KEY = { 1:'senin', 2:'selasa', 3:'rabu', 4:'kamis', 5:'jumat' }; // 0=Min,6=Sab -> libur
-
-/* ---------------------------------------------------------------------- */
-/* 2. JADWAL BLOK UMUM (Ruang 3)                                          */
-/* ---------------------------------------------------------------------- */
-const SCHEDULE_UMUM = {
-  senin: [
-    { jamStart:1, jamEnd:2,  subject:'Sejarah', teacher:'Endang Rijanti, S.Pd (E01)', room:'Ruang 3', category:'teori' },
-    { jamStart:3, jamEnd:4,  subject:'PJOK', teacher:'Hanif Prabowo, S.Pd (D02)', room:'Ruang 3', category:'olahraga' },
-    { jamStart:5, jamEnd:7,  subject:'Bahasa Inggris', teacher:'Suyanto, S.Pd (I02)', room:'Ruang 3', category:'teori' },
-    { jamStart:8, jamEnd:8,  subject:'Bimbingan Konseling', teacher:'Nur Fatimah Zahrok, S.Psi (V03)', room:'Ruang 3', category:'khusus' },
-    { jamStart:9, jamEnd:10, subject:'Pendidikan Agama', teacher:'Suyono, MSI / Nur Zaimah, S.Pd.I (A03/A05)', room:'Ruang 3', category:'teori' },
-  ],
-  selasa: [
-    { jamStart:1, jamEnd:2,  subject:'Sejarah', teacher:'Endang Rijanti, S.Pd (E01)', room:'Ruang 3', category:'teori' },
-    { jamStart:3, jamEnd:6,  subject:'Pendidikan Pancasila', teacher:'Nurul Candra Listyani, S.Pd (B02)', room:'Ruang 3', category:'teori' },
-    { jamStart:7, jamEnd:9,  subject:'Bahasa Inggris', teacher:'Suyanto, S.Pd (I02)', room:'Ruang 3', category:'teori' },
-    { jamStart:10, jamEnd:11, subject:'Pendidikan Agama', teacher:'Suyono, MSI / Nur Zaimah, S.Pd.I (A03/A05)', room:'Ruang 3', category:'teori' },
-  ],
-  rabu: [
-    { jamStart:1, jamEnd:2,  subject:'Pendidikan Agama', teacher:'Suyono, MSI / Nur Zaimah, S.Pd.I (A03/A05)', room:'Ruang 3', category:'teori' },
-    { jamStart:3, jamEnd:4,  subject:'PJOK', teacher:'Hanif Prabowo, S.Pd (D02)', room:'Ruang 3', category:'olahraga' },
-    { jamStart:5, jamEnd:6,  subject:'Bahasa Jawa', teacher:'Haryanto, S.Pd (G02)', room:'Ruang 3', category:'teori' },
-    { jamStart:7, jamEnd:9,  subject:'Bahasa Indonesia', teacher:'Perdana Suria Dinata, M.Pd (C04)', room:'Ruang 3', category:'teori' },
-    { jamStart:10, jamEnd:11, subject:'KIK / Kewirausahaan', teacher:'Parmi, S.Pd (L01)', room:'Ruang 3', category:'teori' },
-  ],
-  kamis: [
-    { jamStart:1, jamEnd:2,  subject:'KIK / Kewirausahaan', teacher:'Parmi, S.Pd (L01)', room:'Ruang 3', category:'teori' },
-    { jamStart:3, jamEnd:5,  subject:'Matematika', teacher:'Kristiana Widayati, S.Pd (H04)', room:'Ruang 3', category:'teori' },
-    { jamStart:6, jamEnd:6,  subject:'Bimbingan Konseling', teacher:'Nur Fatimah Zahrok, S.Psi (V03)', room:'Ruang 3', category:'khusus' },
-    { jamStart:7, jamEnd:8,  subject:'Bahasa Inggris', teacher:'Suyanto, S.Pd (I02)', room:'Ruang 3', category:'teori' },
-    { jamStart:9, jamEnd:10, subject:'Bahasa Jawa', teacher:'Haryanto, S.Pd (G02)', room:'Ruang 3', category:'teori' },
-  ],
-  jumat: [
-    { jamStart:1, jamEnd:3, subject:'Bahasa Indonesia', teacher:'Perdana Suria Dinata, M.Pd (C04)', room:'Ruang 3', category:'teori' },
-    { jamStart:4, jamEnd:6, subject:'Matematika', teacher:'Kristiana Widayati, S.Pd (H04)', room:'Ruang 3', category:'teori' },
-  ],
-};
-
-/* ---------------------------------------------------------------------- */
-/* 3. JADWAL BLOK PRODUKTIF PPLG (Lab J1/J2/J3)                           */
-/* ---------------------------------------------------------------------- */
-const SCHEDULE_PRODUKTIF = {
-  senin: [
-    { jamStart:1, jamEnd:4,  subject:'SKJ', teacher:'Riza Akbar, S.Kom (S06)', room:'Lab J3', category:'kejuruan' },
-    { jamStart:5, jamEnd:7,  subject:'KIK', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
-    { jamStart:8, jamEnd:10, subject:'SaaS', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
-  ],
-  selasa: [
-    { jamStart:1, jamEnd:4,  subject:'SIoT', teacher:'Dalyanta Budisantosa, M.Eng (S02)', room:'Lab J2', category:'kejuruan' },
-    { jamStart:5, jamEnd:7,  subject:'IaaS', teacher:'Andi Adriyatmoko, S.Kom (S01)', room:'Lab J3', category:'kejuruan' },
-    { jamStart:8, jamEnd:11, subject:'PaaS', teacher:'Ahmad Suruli Musthofa, S.Kom (S04)', room:'Lab J2', category:'kejuruan' },
-  ],
-  rabu: [
-    { jamStart:1, jamEnd:4,  subject:'SIoT', teacher:'Dalyanta Budisantosa, M.Eng (S02)', room:'Lab J3', category:'kejuruan' },
-    { jamStart:5, jamEnd:8,  subject:'SKJ', teacher:'Riza Akbar, S.Kom (S06)', room:'Lab J3', category:'kejuruan' },
-    { jamStart:9, jamEnd:11, subject:'IaaS', teacher:'Andi Adriyatmoko, S.Kom (S01)', room:'Lab J3', category:'kejuruan' },
-  ],
-  kamis: [
-    { jamStart:1, jamEnd:4,  subject:'Mapil PPLG', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
-    { jamStart:5, jamEnd:7,  subject:'KIK', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
-    { jamStart:8, jamEnd:11, subject:'PaaS', teacher:'Ahmad Suruli Musthofa, S.Kom (S04)', room:'Lab J2', category:'kejuruan' },
-  ],
-  jumat: [
-    { jamStart:1, jamEnd:3, subject:'SaaS', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
-    { jamStart:4, jamEnd:7, subject:'Mapil PPLG', teacher:'Atik Ariyani, S.Kom (S03)', room:'Lab J1', category:'kejuruan' },
-  ],
-};
-
-const SCHEDULES = { umum: SCHEDULE_UMUM, produktif: SCHEDULE_PRODUKTIF };
-
-/* Daftar mapel unik (untuk form tugas & filter) */
-function getAllSubjects(){
-  const set = new Set();
-  [SCHEDULE_UMUM, SCHEDULE_PRODUKTIF].forEach(block=>{
-    Object.values(block).forEach(day=> day.forEach(s=> set.add(s.subject)));
-  });
-  return Array.from(set).sort();
-}
-
-/* ---------------------------------------------------------------------- */
-/* 4. KALENDER AKADEMIK (data contoh — sesuaikan kalender resmi sekolah)   */
-/* ---------------------------------------------------------------------- */
-function expandRange(startISO, endISO, title, type){
-  const out = [];
-  let d = new Date(startISO + 'T00:00:00');
-  const end = new Date(endISO + 'T00:00:00');
-  while (d <= end){
-    out.push({ date: d.toISOString().slice(0,10), title, type });
-    d.setDate(d.getDate()+1);
-  }
-  return out;
-}
-
-/* Sumber: Kalender Pendidikan SMK Negeri 2 Klaten, Tahun Pelajaran 2025/2026
-   (kalender dinding resmi sekolah, ditandatangani Kepala Sekolah 14 Juli 2025). */
-const CALENDAR_EVENTS = [
-  ...expandRange('2025-07-14','2025-07-14','Hari Pertama Masuk Sekolah', 'sekolah'),
-  ...expandRange('2025-07-14','2025-07-16','Kegiatan MPLS', 'sekolah'),
-  ...expandRange('2025-07-17','2025-07-17','Masa Pengenalan Mitra Sekolah (MPMS)', 'sekolah'),
-  ...expandRange('2025-08-04','2025-08-07','Perkiraan AN (Asesmen Nasional)', 'an'),
-  ...expandRange('2025-08-17','2025-08-17','Mengikuti Upacara HUT Kemerdekaan RI', 'libur-nasional'),
-  ...expandRange('2025-09-05','2025-09-05',"Libur Umum (Peringatan Maulid Nabi Muhammad SAW 1446 H)", 'libur-nasional'),
-  ...expandRange('2025-09-22','2025-09-26','Penilaian Sumatif Tengah Semester Gasal', 'pts'),
-  ...expandRange('2025-10-01','2025-10-01','Mengikuti Upacara Hari Kesaktian Pancasila', 'sekolah'),
-  ...expandRange('2025-10-28','2025-10-28','Mengikuti Upacara Peringatan Hari Sumpah Pemuda', 'sekolah'),
-  ...expandRange('2025-11-10','2025-11-10','Mengikuti Upacara Peringatan Hari Pahlawan', 'sekolah'),
-  ...expandRange('2025-11-17','2025-11-19','Tes Kemampuan Akademik (TKA)', 'tka'),
-  ...expandRange('2025-11-24','2025-12-05','Perkiraan Penilaian Sumatif Akhir Semester (5 hari sekolah)', 'pas'),
-  ...expandRange('2025-12-13','2025-12-13','Penyerahan Buku Laporan Hasil Belajar Semester Gasal (5 hari sekolah)', 'sekolah'),
-  ...expandRange('2025-12-22','2026-01-02','Libur Akhir Semester Gasal (5 hari sekolah)', 'libur-semester'),
-  ...expandRange('2025-12-25','2025-12-25','Libur Umum (Hari Raya Natal)', 'libur-nasional'),
-  ...expandRange('2025-12-26','2025-12-26','Cuti Bersama setelah Hari Raya Natal', 'libur-nasional'),
-  ...expandRange('2026-01-01','2026-01-01','Libur Umum (Tahun Baru Masehi 2026)', 'libur-nasional'),
-  ...expandRange('2026-01-05','2026-01-05','Hari Pertama Masuk Semester Genap', 'sekolah'),
-  ...expandRange('2026-01-16','2026-01-16',"Libur Umum (Isra Mi'raj 1447 H)", 'libur-nasional'),
-  ...expandRange('2026-02-17','2026-02-17','Libur Umum (Tahun Baru Imlek 2577)', 'libur-nasional'),
-  ...expandRange('2026-02-19','2026-02-19','Libur Umum (Perkiraan libur awal Puasa Ramadhan 1447 H)', 'libur-nasional'),
-  ...expandRange('2026-03-09','2026-03-13','Penilaian Sumatif Tengah Semester Genap', 'pts'),
-  ...expandRange('2026-03-16','2026-03-18','Libur Umum (Sebelum Hari Raya Idul Fitri 1447 H)', 'libur-nasional'),
-  ...expandRange('2026-03-19','2026-03-19','Libur Umum (Hari Raya Nyepi Tahun Baru Saka 1948)', 'libur-nasional'),
-  ...expandRange('2026-03-20','2026-03-21','Libur Umum (Hari Raya Idul Fitri 1447 H)', 'libur-nasional'),
-  ...expandRange('2026-03-23','2026-03-28','Libur Umum (Sesudah Hari Raya Idul Fitri 1447 H)', 'libur-nasional'),
-  ...expandRange('2026-03-30','2026-04-10','Perkiraan Penilaian Sumatif Akhir Jenjang (5 hari sekolah)', 'pas'),
-  ...expandRange('2026-04-03','2026-04-03','Libur Umum (Wafat Yesus Kristus - Hari Paskah)', 'libur-nasional'),
-  ...expandRange('2026-05-01','2026-05-01','Libur Umum (Hari Buruh Internasional)', 'libur-nasional'),
-  ...expandRange('2026-05-02','2026-05-02','Mengikuti Upacara Peringatan Hari Pendidikan Nasional', 'sekolah'),
-  ...expandRange('2026-05-04','2026-05-04','Perkiraan Pengumuman Kelulusan', 'sekolah'),
-  ...expandRange('2026-05-14','2026-05-14','Libur Umum (Hari Kenaikan Yesus Kristus)', 'libur-nasional'),
-  ...expandRange('2026-05-20','2026-05-20','Mengikuti Upacara Peringatan Hari Kebangkitan Nasional', 'sekolah'),
-  ...expandRange('2026-05-25','2026-06-05','Perkiraan Penilaian Sumatif Akhir Tahun (5 hari sekolah)', 'pas'),
-  ...expandRange('2026-05-27','2026-05-27','Libur Umum (Hari Raya Idul Adha 1447 H)', 'libur-nasional'),
-  ...expandRange('2026-06-01','2026-06-01','Mengikuti Upacara Hari Lahir Pancasila', 'sekolah'),
-  ...expandRange('2026-06-17','2026-06-17','Libur Umum (Tahun Baru Islam 1448 H)', 'libur-nasional'),
-  ...expandRange('2026-06-19','2026-06-19','Penyerahan Buku Laporan Hasil Belajar Semester Genap (5 hari sekolah)', 'sekolah'),
-  ...expandRange('2026-06-22','2026-07-11','Libur Akhir Semester Genap/Libur Akhir Tahun Ajaran 2025/2026', 'libur-semester'),
-  ...expandRange('2026-07-13','2026-07-13','Permulaan Tahun Ajaran 2026/2027', 'sekolah'),
-];
-
-const CAL_TYPE_LABEL = {
-  'pts':'Penilaian Sumatif Tengah Semester', 'pas':'Penilaian Sumatif Akhir Semester/Jenjang/Tahun',
-  'tka':'Tes Kemampuan Akademik (TKA)', 'an':'Asesmen Nasional (AN)', 'ukk':'Uji Kompetensi Keahlian',
-  'libur-semester':'Libur Semester', 'libur-nasional':'Libur Umum / Nasional', 'sekolah':'Kegiatan Sekolah',
-  'pribadi':'Acara Kelas / Pribadi'
-};
 
 /* ---------- Acara kalender tambahan (Firestore, collection 'calendarEvents') ---------- */
 let customEvents = []; // disinkron realtime dari Firestore
@@ -2154,6 +1899,7 @@ function toggleTheme(){
 /* 15. INIT                                                                 */
 /* ---------------------------------------------------------------------- */
 function init(){
+  registerAuthListener();
   showStorageWarning();
 
   // Navigasi
@@ -2376,4 +2122,8 @@ function init(){
   document.getElementById('piketPhoto').addEventListener('change', handlePiketPhotoChange);
 }
 
-document.addEventListener('DOMContentLoaded', init);
+// Ditunggu sampai partials-loader.js selesai menyuntikkan semua HTML
+// partial ke DOM (lihat src/js/partials-loader.js), baru init() dijalankan.
+// Ini menggantikan 'DOMContentLoaded' karena konten HTML sekarang dimuat
+// secara async lewat fetch().
+document.addEventListener('partials:ready', init);

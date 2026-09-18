@@ -1,0 +1,34 @@
+  <!-- ============ MODAL: TAMBAH ACARA KALENDER ============ -->
+  <div class="modal-overlay" id="calEventModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tambah Acara Kalender</h3>
+        <button class="icon-btn" id="closeCalEventModal">&times;</button>
+      </div>
+      <form id="calEventForm" class="modal__form">
+        <label>
+          Tanggal
+          <input type="date" id="calInputDate" required>
+        </label>
+        <label>
+          Judul Acara
+          <input type="text" id="calInputTitle" placeholder="Contoh: Rapat OSIS, Lomba Kelas, dll." required>
+        </label>
+        <label>
+          Jenis
+          <select id="calInputType">
+            <option value="pribadi">Acara Kelas / Pribadi</option>
+            <option value="sekolah">Kegiatan Sekolah</option>
+            <option value="pts">Penilaian Sumatif Tengah Semester</option>
+            <option value="pas">Penilaian Sumatif Akhir Semester/Jenjang/Tahun</option>
+            <option value="tka">Tes Kemampuan Akademik (TKA)</option>
+            <option value="an">Asesmen Nasional (AN)</option>
+            <option value="ukk">Uji Kompetensi Keahlian</option>
+            <option value="libur-nasional">Libur Umum / Nasional</option>
+            <option value="libur-semester">Libur Semester</option>
+          </select>
+        </label>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Acara</button>
+      </form>
+    </div>
+  </div>

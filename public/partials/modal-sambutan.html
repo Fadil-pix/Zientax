@@ -1,0 +1,25 @@
+  <!-- ============ MODAL: EDIT SAMBUTAN TAMAN ============ -->
+  <div class="modal-overlay" id="sambutanModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Edit Sambutan Taman</h3>
+        <button class="icon-btn" id="closeSambutanModal">&times;</button>
+      </div>
+      <form id="sambutanForm" class="modal__form">
+        <label>
+          Judul Sambutan
+          <input type="text" id="sambutanTitle" placeholder="Contoh: Selamat Datang di Taman Kelas" required>
+        </label>
+        <label>
+          Teks Sambutan
+          <textarea id="sambutanCaption" rows="3" placeholder="Kalimat sambutan singkat tentang taman kelas..."></textarea>
+        </label>
+        <label>
+          Foto Sampul Taman (opsional, 1 foto)
+          <input type="file" id="sambutanPhoto" accept="image/*">
+        </label>
+        <div id="sambutanPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Sambutan</button>
+      </form>
+    </div>
+  </div>

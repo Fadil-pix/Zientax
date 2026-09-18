@@ -1,0 +1,63 @@
+    <!-- ============ KAS KELAS ============ -->
+    <section class="view" id="view-kas">
+      <div class="view-head">
+        <div>
+          <h2>Kas Kelas</h2>
+          <p class="view-sub">Iuran kas kelas Rp10.000 per bulan per siswa. Klik nama siswa untuk membuka rincian &amp; menandai bulan yang sudah dibayar.</p>
+        </div>
+      </div>
+
+      <div class="stat-row kas-stats">
+        <div class="stat">
+          <span class="stat__num" id="kasTotalTerkumpul">Rp0</span>
+          <span class="stat__label">Total Iuran Terkumpul</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasLunasCount">0 / 0 siswa</span>
+          <span class="stat__label">Lunas Bulan Ini</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasTunggakanCount">0 bulan</span>
+          <span class="stat__label">Total Tunggakan Kelas</span>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <input type="text" id="kasSearch" class="select" placeholder="Cari nama" style="flex:1; min-width:200px;">
+        <select id="kasFilterStatus" class="select">
+          <option value="all">Semua Siswa</option>
+          <option value="lunas">Lunas Bulan Ini</option>
+          <option value="tunggakan">Ada Tunggakan</option>
+        </select>
+        <span class="filter-count" id="kasFilterCount"></span>
+      </div>
+
+      <div class="kas-list" id="kasList"></div>
+
+      <div class="view-head" style="margin-top:36px;">
+        <div>
+          <h2>Buku Kas — Pemasukan &amp; Pengeluaran</h2>
+          <p class="view-sub">Catatan pemasukan lain (selain iuran bulanan) dan pengeluaran kas kelas. Saldo dihitung otomatis dari iuran + pemasukan lain − pengeluaran.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary admin-only" id="openKasTxModal">+ Transaksi</button>
+        </div>
+      </div>
+
+      <div class="stat-row kas-stats">
+        <div class="stat">
+          <span class="stat__num" id="kasSaldo">Rp0</span>
+          <span class="stat__label">Saldo Kas Saat Ini</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasTotalMasuk">Rp0</span>
+          <span class="stat__label">Pemasukan Lain</span>
+        </div>
+        <div class="stat">
+          <span class="stat__num" id="kasTotalKeluar">Rp0</span>
+          <span class="stat__label">Total Pengeluaran</span>
+        </div>
+      </div>
+
+      <div class="kas-tx-list" id="kasTxList"></div>
+    </section>

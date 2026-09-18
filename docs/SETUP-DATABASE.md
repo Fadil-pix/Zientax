@@ -34,7 +34,7 @@ Tema (gelap/terang) dan pilihan blok tetap disimpan lokal per-perangkat.
      appId: "1:123456789:web:abcd1234"
    };
    ```
-5. **Copy semua isinya**, lalu buka `script.js`, cari bagian:
+5. **Copy semua isinya**, lalu buka `src/js/firebase-config.js`, cari bagian:
    ```js
    const firebaseConfig = {
      apiKey: "GANTI_DENGAN_API_KEY_KAMU",
@@ -127,12 +127,26 @@ menulis** (dan semua orang tetap bisa membaca), pakai aturan berikut:
 
 ## 6. Hosting (supaya bisa dibuka semua orang)
 
-Karena `script.js` sekarang memuat Firebase dari internet (`import ...
-gstatic.com`), situs **harus dibuka lewat server/hosting**, bukan dengan
-klik-dua-kali file `index.html` dari folder lokal. Opsi gratis:
+Karena `src/js/main.js` memuat Firebase dari internet (`import ...
+gstatic.com`) **dan** halaman ini memuat potongan HTML lewat `fetch()`
+(lihat `src/js/partials-loader.js`), situs **wajib dibuka lewat
+server/hosting** — tidak bisa lagi dengan klik-dua-kali file
+`public/index.html` dari folder lokal (browser akan memblokir `fetch()`
+ke file lokal karena aturan CORS pada protokol `file://`).
+
+Untuk coba-coba di komputer sendiri, jalankan salah satu server statis
+ringan ini dari folder project, lalu buka `http://localhost:<port>/public/`:
+
+- `npx serve .`
+- `python3 -m http.server 8000`
+- Ekstensi **Live Server** di VS Code (klik kanan `public/index.html` →
+  "Open with Live Server")
+
+Untuk publish supaya bisa dibuka semua orang, opsi gratis:
 
 - **GitHub Pages** — upload folder ini ke repo GitHub, aktifkan Pages di
-  Settings → Pages.
+  Settings → Pages (arahkan ke root, karena `public/index.html` memuat
+  file dari `../src/` dan `../assets/` di luar folder `public/`).
 - **Netlify / Vercel** — drag & drop folder ini ke dashboard mereka.
 
 ## Struktur data di Firestore

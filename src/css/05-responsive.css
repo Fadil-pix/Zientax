@@ -1,0 +1,42 @@
+/* ==========================================================================
+   05-RESPONSIVE — semua @media breakpoint. Dimuat PALING AKHIR supaya bisa
+   meng-override rule dari file manapun di atasnya.
+   ========================================================================== */
+
+@media (max-width: 360px){
+  .qr-box{ gap:8px; padding:10px; }
+  .qr-box__code{ padding:4px; }
+  .qr-box__code canvas,
+  .qr-box__code img{ width:64px !important; height:64px !important; }
+  .qr-box__label{ display:none; } /* teks judul disembunyikan duluan di layar sangat sempit, hint & tombol tetap keliatan */
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 880px){
+  .hero{ grid-template-columns:1fr; }
+  .dash-grid{ grid-template-columns:1fr; }
+  .cal-wrap{ grid-template-columns:1fr; }
+  .kanban{ grid-template-columns:1fr; }
+}
+@media (max-width: 720px){
+  .topbar__nav{ position:fixed; top:60px; left:16px; right:16px; flex-direction:column; background:var(--bg-card); display:none; z-index:39; border-radius:var(--radius); }
+  .topbar__nav.is-open{ display:flex; }
+  .navburger{ display:inline-flex; }
+  .navlink{ text-align:left; padding:10px 14px; border-radius:var(--radius-sm); }
+  .hero__meta{ grid-template-columns:1fr 1fr; }
+  .form-row{ grid-template-columns:1fr; }
+  .slot-row{ grid-template-columns:1fr; row-gap:4px; }
+  .kas-row__head{ grid-template-columns:auto 1fr; row-gap:6px; }
+  .kas-row__status{ grid-column:1 / -1; padding-left:24px; }
+  .kas-months{ padding-left:14px; }
+  .kas-tx-row{ flex-direction:column; align-items:flex-start; }
+  .kas-tx-row__amount{ align-self:flex-end; }
+  .taman-hero{ min-height:180px; }
+  .plant-grid{ grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); }
+}
+@media (max-width: 480px){
+  .app{ padding:20px 14px 60px; }
+  .clock-card__time{ font-size:26px; }
+  .admin-badge{ padding:0 9px; }
+  .admin-badge span{ display:none; }
+}

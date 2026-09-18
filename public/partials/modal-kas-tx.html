@@ -1,0 +1,33 @@
+  <!-- ============ MODAL: TRANSAKSI KAS (PEMASUKAN/PENGELUARAN) ============ -->
+  <div class="modal-overlay" id="kasTxModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tambah Transaksi Kas</h3>
+        <button class="icon-btn" id="closeKasTxModal">&times;</button>
+      </div>
+      <form id="kasTxForm" class="modal__form">
+        <label>
+          Jenis
+          <select id="txType">
+            <option value="masuk">Pemasukan</option>
+            <option value="keluar">Pengeluaran</option>
+          </select>
+        </label>
+        <div class="form-row">
+          <label>
+            Tanggal
+            <input type="date" id="txDate" required>
+          </label>
+          <label>
+            Jumlah (Rp)
+            <input type="number" id="txAmount" min="0" step="100" required>
+          </label>
+        </div>
+        <label>
+          Keterangan
+          <input type="text" id="txDesc" placeholder="Contoh: Beli spidol &amp; penghapus" required>
+        </label>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Transaksi</button>
+      </form>
+    </div>
+  </div>

@@ -1,0 +1,31 @@
+  <!-- ============ MODAL: TAMBAH PIKET HARIAN ============ -->
+  <div class="modal-overlay" id="piketModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tambah Piket Harian</h3>
+        <button class="icon-btn" id="closePiketModal">&times;</button>
+      </div>
+      <form id="piketForm" class="modal__form">
+        <div class="form-row">
+          <label>
+            Tanggal
+            <input type="date" id="piketDate" required>
+          </label>
+          <label>
+            Petugas Piket
+            <input type="text" id="piketPetugas" placeholder="Contoh: Andi, Budi" required>
+          </label>
+        </div>
+        <label>
+          Catatan
+          <textarea id="piketDesc" rows="3" placeholder="Apa saja yang dikerjakan (opsional)"></textarea>
+        </label>
+        <label>
+          Foto Piket (bisa pilih beberapa sekaligus)
+          <input type="file" id="piketPhoto" accept="image/*" multiple>
+        </label>
+        <div id="piketPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Piket</button>
+      </form>
+    </div>
+  </div>

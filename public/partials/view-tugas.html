@@ -1,0 +1,38 @@
+    <!-- ============ TUGAS ============ -->
+    <section class="view" id="view-tugas">
+      <div class="view-head">
+        <div>
+          <h2>Tracker Tugas &amp; PR</h2>
+          <p class="view-sub">Kelola tugas per mata pelajaran, geser status seiring progres pengerjaan.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn--primary admin-only" id="openTaskModal">+ Tugas Baru</button>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <select id="filterSubject" class="select">
+          <option value="all">Semua Mapel</option>
+        </select>
+        <select id="sortDeadline" class="select">
+          <option value="deadline-asc">Deadline Terdekat</option>
+          <option value="deadline-desc">Deadline Terjauh</option>
+        </select>
+        <span class="filter-count" id="filterCount"></span>
+      </div>
+
+      <div class="kanban" id="kanban">
+        <div class="kanban__col" data-status="belum">
+          <div class="kanban__head"><span class="kanban__dot kanban__dot--belum"></span>Belum Dikerjakan <span class="kanban__count" id="countBelum">0</span></div>
+          <div class="kanban__list" id="listBelum"></div>
+        </div>
+        <div class="kanban__col" data-status="sedang">
+          <div class="kanban__head"><span class="kanban__dot kanban__dot--sedang"></span>Sedang Dikerjakan <span class="kanban__count" id="countSedang">0</span></div>
+          <div class="kanban__list" id="listSedang"></div>
+        </div>
+        <div class="kanban__col" data-status="selesai">
+          <div class="kanban__head"><span class="kanban__dot kanban__dot--selesai"></span>Selesai <span class="kanban__count" id="countSelesai">0</span></div>
+          <div class="kanban__list" id="listSelesai"></div>
+        </div>
+      </div>
+    </section>

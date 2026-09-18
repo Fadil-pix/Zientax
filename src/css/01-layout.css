@@ -1,0 +1,61 @@
+/* ==========================================================================
+   01-LAYOUT — struktur besar halaman: topbar/navigasi & kerangka .app/.view.
+   ========================================================================== */
+
+/* ---------- Topbar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:40;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 24px;
+  background:color-mix(in srgb, var(--bg-elev) 92%, transparent);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.topbar__brand{ display:flex; align-items:center; gap:10px; }
+.brand__text{ font-family:var(--font-mono); font-weight:600; color:var(--text); font-size:14px; }
+.cursor{ display:inline-block; color:var(--amber); animation:blink 1.1s steps(1) infinite; }
+@keyframes blink{ 50%{ opacity:0; } }
+
+.dot{ width:9px; height:9px; border-radius:50%; display:inline-block; }
+.dot--red{ background:#f07178; }
+.dot--yellow{ background:#ffcb6b; }
+.dot--green{ background:#9ec27a; }
+
+.topbar__nav{ display:flex; gap:4px; background:var(--bg-card); border:1px solid var(--border); border-radius:999px; padding:4px; }
+.navlink{
+  border:none; background:transparent; color:var(--text-dim);
+  font-family:var(--font-mono); font-size:12.5px; padding:7px 14px; border-radius:999px;
+  transition:all .15s ease;
+}
+.navlink:hover{ color:var(--text); }
+.navlink.is-active{ background:var(--amber-soft); color:var(--amber); }
+
+.topbar__actions{ display:flex; align-items:center; gap:8px; }
+.icon-btn{
+  width:34px; height:34px; display:inline-flex; align-items:center; justify-content:center;
+  background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm);
+  color:var(--text-dim); transition:all .15s ease;
+}
+.icon-btn:hover{ color:var(--amber); border-color:var(--amber-dim); }
+.navburger{ display:none; }
+
+.admin-badge{
+  width:auto; height:34px; padding:0 12px; gap:7px; font-family:var(--font-mono); font-size:11.5px; font-weight:600;
+}
+.admin-badge svg{ flex-shrink:0; }
+body.is-admin .admin-badge{ color:var(--sage); border-color:var(--sage); background:var(--sage-soft); }
+
+.admin-only{ display:none; }
+body.is-admin .admin-only{ display:inline-flex; }
+
+
+/* ---------- App layout ---------- */
+.app{ max-width:1180px; margin:0 auto; padding:28px 24px 80px; }
+.view{ display:none; animation:fadeIn .3s ease; }
+.view.is-active{ display:block; }
+@keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+.view-head{ display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+.view-head h2{ font-size:22px; margin-bottom:6px; }
+.view-sub{ color:var(--text-dim); font-size:13.5px; max-width:520px; }
+

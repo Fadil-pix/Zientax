@@ -1,0 +1,98 @@
+/* ==========================================================================
+   00-BASE — variabel warna/tema, reset dasar, tipografi global.
+   Dimuat PALING AWAL karena file CSS lain bergantung pada custom
+   properties (--bg, --text, --font-mono, dst) yang didefinisikan di sini.
+   ========================================================================== */
+
+:root{
+  --bg:            #0a0d12;
+  --bg-elev:       #0f131a;
+  --bg-card:       #131922;
+  --bg-card-hover: #171f2b;
+  --border:        #232c3a;
+  --border-soft:   #1a212c;
+  --text:          #e7ecf3;
+  --text-dim:      #8b97a8;
+  --text-faint:    #5a6576;
+
+  --amber:         #ffb454;
+  --amber-dim:     #8a6a3a;
+  --cyan:          #5ccfe6;
+  --magenta:       #d3869b;
+  --sage:          #9ec27a;
+  --red:           #f07178;
+  --blue:          #7c9cff;
+  --violet:        #b48ce6;
+  --orange:        #ff8f4d;
+
+  --amber-soft:    rgba(255,180,84,.12);
+  --cyan-soft:     rgba(92,207,230,.12);
+  --magenta-soft:  rgba(211,134,155,.14);
+  --sage-soft:     rgba(158,194,122,.14);
+  --red-soft:      rgba(240,113,120,.14);
+  --blue-soft:     rgba(124,156,255,.14);
+  --violet-soft:   rgba(180,140,230,.14);
+  --orange-soft:   rgba(255,143,77,.14);
+
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-sans: 'Inter', system-ui, sans-serif;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+  --shadow: 0 8px 24px rgba(0,0,0,.35);
+
+  /* Satu rasio aspek tunggal untuk semua holder foto tanaman (kartu & detail),
+     supaya ukurannya konsisten dan tidak beda-beda. */
+  --plant-photo-ratio: 4/3;
+}
+
+[data-theme="light"]{
+  --bg:            #f6f4ee;
+  --bg-elev:       #ffffff;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f1efe7;
+  --border:        #e2ddd0;
+  --border-soft:   #ebe6d9;
+  --text:          #1c1f26;
+  --text-dim:      #5c6472;
+  --text-faint:    #92978f;
+
+  --amber-soft:    rgba(196,120,17,.12);
+  --cyan-soft:     rgba(20,130,150,.1);
+  --magenta-soft:  rgba(168,66,97,.1);
+  --sage-soft:     rgba(74,116,42,.1);
+  --red-soft:      rgba(190,50,55,.1);
+
+  --amber:         #b8730f;
+  --cyan:          #1284a1;
+  --magenta:       #a34264;
+  --sage:          #4a742a;
+  --red:           #be3237;
+  --blue:          #3955c4;
+  --blue-soft:     rgba(57,85,196,.1);
+  --violet:        #7c4dab;
+  --violet-soft:   rgba(124,77,171,.1);
+  --orange:        #c15a1c;
+  --orange-soft:   rgba(193,90,28,.1);
+
+  --shadow: 0 8px 24px rgba(30,25,10,.08);
+}
+
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font-sans);
+  -webkit-font-smoothing:antialiased;
+  transition:background .25s ease, color .25s ease;
+}
+h1,h2,h3,h4{ font-family:var(--font-mono); margin:0; letter-spacing:-.01em; }
+p{ margin:0; }
+button{ font-family:inherit; cursor:pointer; }
+select,input,textarea{ font-family:inherit; }
+::selection{ background:var(--amber-soft); color:var(--amber); }
+
+.accent{ color:var(--amber); }
+

@@ -1,0 +1,35 @@
+  <!-- ============ MODAL: TAMBAH KEGIATAN SELASA ASRI ============ -->
+  <div class="modal-overlay" id="kegiatanModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tambah Kegiatan Selasa Asri</h3>
+        <button class="icon-btn" id="closeKegiatanModal">&times;</button>
+      </div>
+      <form id="kegiatanForm" class="modal__form">
+        <div class="form-row">
+          <label>
+            Tanggal
+            <input type="date" id="kegiatanDate" required>
+          </label>
+          <label>
+            Petugas / Kelompok
+            <input type="text" id="kegiatanPetugas" placeholder="Contoh: Kelompok 3">
+          </label>
+        </div>
+        <label>
+          Judul Kegiatan
+          <input type="text" id="kegiatanTitle" placeholder="Contoh: Menyiram &amp; menyiangi taman blok A" required>
+        </label>
+        <label>
+          Catatan
+          <textarea id="kegiatanDesc" rows="3" placeholder="Detail kegiatan (opsional)"></textarea>
+        </label>
+        <label>
+          Foto Kegiatan (bisa pilih beberapa sekaligus)
+          <input type="file" id="kegiatanPhoto" accept="image/*" multiple>
+        </label>
+        <div id="kegiatanPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Kegiatan</button>
+      </form>
+    </div>
+  </div>

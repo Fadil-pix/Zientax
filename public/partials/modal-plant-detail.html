@@ -1,0 +1,44 @@
+  <!-- ============ MODAL: DETAIL TANAMAN + QR CODE ============ -->
+  <div class="modal-overlay" id="plantDetailModalOverlay">
+    <div class="modal modal--photo">
+      <div class="modal__head">
+        <h3 id="plantDetailName">Tanaman</h3>
+        <button class="icon-btn" id="closePlantDetailModal">&times;</button>
+      </div>
+      <div class="plant-detail__body">
+        <!-- Foto utama tanaman (di atas, sebelum info teks) -->
+        <div id="plantDetailMainPhoto" class="plant-detail__main-photo" style="display:none;">
+          <img id="plantDetailMainImg" src="" alt="Foto Tanaman">
+        </div>
+        <div id="plantDetailPhotoGrid" class="photo-grid plant-detail__photo-grid" style="display:none;"></div>
+
+        <p class="plant-detail__latin" id="plantDetailLatin"></p>
+        <div class="plant-detail__tags">
+          <span class="badge badge--sage" id="plantDetailCategory"></span>
+          <span class="badge badge--cyan" id="plantDetailLocation"></span>
+        </div>
+        <p class="plant-detail__desc" id="plantDetailDesc"></p>
+
+        <div class="qr-box">
+          <div id="plantQRCode" class="qr-box__code"></div>
+          <div class="qr-box__info">
+            <span class="qr-box__label">QR Code Label Tanaman</span>
+            <p class="qr-box__hint">Cetak &amp; tempel QR ini di tanaman. Saat dipindai, pengunjung akan langsung diarahkan ke halaman ini.</p>
+            <div class="qr-box__actions">
+              <button type="button" class="btn btn--sm" id="downloadPlantQR">Unduh QR</button>
+              <button type="button" class="btn btn--sm btn--primary" id="printPlantQR">Cetak Label</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn btn--sm btn--ghost plant-detail__explore" id="exploreWebsiteBtn">
+          🧭 Eksplor Website Kelas Lainnya
+        </button>
+
+        <div class="plant-detail__actions admin-only">
+          <button type="button" class="btn btn--sm" id="editPlantFromDetail">Edit Tanaman</button>
+          <button type="button" class="btn btn--sm" id="deletePlantFromDetail">Hapus Tanaman</button>
+        </div>
+      </div>
+    </div>
+  </div>

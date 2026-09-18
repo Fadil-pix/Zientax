@@ -1,0 +1,42 @@
+  <!-- ============ MODAL: TUGAS BARU ============ -->
+  <div class="modal-overlay" id="taskModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Tugas Baru</h3>
+        <button class="icon-btn" id="closeTaskModal">&times;</button>
+      </div>
+      <form id="taskForm" class="modal__form">
+        <label>
+          Mata Pelajaran
+          <select id="inputSubject" required></select>
+        </label>
+        <label>
+          Judul Tugas
+          <input type="text" id="inputTitle" placeholder="Contoh: Laporan Praktikum SaaS" required>
+        </label>
+        <div class="form-row">
+          <label>
+            Deadline
+            <input type="date" id="inputDeadline" required>
+          </label>
+          <label>
+            Tipe
+            <select id="inputType">
+              <option value="Individu">Individu</option>
+              <option value="Kelompok">Kelompok</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Keterangan
+          <textarea id="inputDesc" rows="3" placeholder="Detail tambahan, link, atau instruksi..."></textarea>
+        </label>
+        <label>
+          Foto Tugas / Catatan Materi (opsional, bisa pilih beberapa sekaligus)
+          <input type="file" id="inputPhoto" accept="image/*" multiple>
+        </label>
+        <div id="inputPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Tugas</button>
+      </form>
+    </div>
+  </div>

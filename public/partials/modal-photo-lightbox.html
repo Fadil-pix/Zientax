@@ -1,0 +1,20 @@
+  <!-- ============ MODAL: LIGHTBOX LIHAT FOTO TUGAS ============ -->
+  <div class="modal-overlay" id="photoLightboxOverlay">
+    <div class="modal modal--photo">
+      <div class="modal__head">
+        <h3 id="photoLightboxTitle">Foto Tugas</h3>
+        <button class="icon-btn" id="closePhotoLightbox">&times;</button>
+      </div>
+      <div class="photo-lightbox__body">
+        <img id="photoLightboxImg" src="" alt="Foto tugas / catatan materi">
+        <div class="photo-lightbox__nav" id="photoLightboxNav" style="display:none;">
+          <button type="button" class="icon-btn" id="prevPhotoBtn" title="Foto sebelumnya">&#8249;</button>
+          <span id="photoLightboxCounter" class="photo-lightbox__counter"></span>
+          <button type="button" class="icon-btn" id="nextPhotoBtn" title="Foto berikutnya">&#8250;</button>
+        </div>
+        <p id="photoLightboxDesc" class="photo-lightbox__desc"></p>
+        <a class="btn btn--primary photo-lightbox__download" id="downloadPhotoBtn" download="foto-tugas.jpg" href="#">          Unduh Foto
+        </a>
+      </div>
+    </div>
+  </div>

@@ -1,0 +1,17 @@
+  <!-- ============ MODAL: FOTO TUGAS (TAMBAH/GANTI/HAPUS UNTUK TUGAS YANG SUDAH ADA) ============ -->
+  <div class="modal-overlay" id="taskPhotoModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>Foto Tugas / Catatan Materi</h3>
+        <button class="icon-btn" id="closeTaskPhotoModal">&times;</button>
+      </div>
+      <form id="taskPhotoForm" class="modal__form">
+        <label>
+          Tambah Foto (bisa pilih beberapa sekaligus)
+          <input type="file" id="taskPhotoFile" accept="image/*" multiple>
+        </label>
+        <div id="taskPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Foto</button>
+      </form>
+    </div>
+  </div>

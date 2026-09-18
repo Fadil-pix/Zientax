@@ -1,0 +1,46 @@
+  <!-- ============ MODAL: TANAMAN BARU / EDIT TANAMAN ============ -->
+  <div class="modal-overlay" id="plantModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3 id="plantModalTitle">Tanaman Baru</h3>
+        <button class="icon-btn" id="closePlantModal">&times;</button>
+      </div>
+      <form id="plantForm" class="modal__form">
+        <label>
+          Nama Tanaman
+          <input type="text" id="plantName" placeholder="Contoh: Lidah Mertua" required>
+        </label>
+        <div class="form-row">
+          <label>
+            Nama Latin
+            <input type="text" id="plantLatin" placeholder="Contoh: Sansevieria trifasciata">
+          </label>
+          <label>
+            Kategori
+            <select id="plantCategory">
+              <option value="Pohon">Pohon</option>
+              <option value="Perdu / Semak">Perdu / Semak</option>
+              <option value="Tanaman Hias">Tanaman Hias</option>
+              <option value="Tanaman Obat (TOGA)">Tanaman Obat (TOGA)</option>
+              <option value="Sayuran / Tanaman Pangan">Sayuran / Tanaman Pangan</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          Lokasi di Taman
+          <input type="text" id="plantLocation" placeholder="Contoh: Blok A dekat pagar">
+        </label>
+        <label>
+          Keterangan
+          <textarea id="plantDesc" rows="3" placeholder="Manfaat, cara rawat, atau catatan lain..."></textarea>
+        </label>
+        <label>
+          Foto Tanaman (opsional, bisa pilih beberapa sekaligus)
+          <input type="file" id="plantPhoto" accept="image/*" multiple>
+        </label>
+        <div id="plantPhotoPreviewWrap" class="photo-grid" style="display:none;"></div>
+        <button type="submit" class="btn btn--primary btn--block">Simpan Tanaman</button>
+      </form>
+    </div>
+  </div>
