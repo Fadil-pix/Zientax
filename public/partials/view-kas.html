@@ -22,6 +22,16 @@
         </div>
       </div>
 
+      <!-- Iuran per siswa -->
+      <div class="acc" id="accIuran">
+        <div class="acc__head" role="button" tabindex="0">
+          <span class="acc__chev"></span>
+          <div class="acc__title">
+            <h3>Iuran Siswa <span class="acc__count" data-count-for="kasList">0</span></h3>
+            <p>Daftar iuran bulanan tiap siswa. Klik nama siswa untuk melihat rincian.</p>
+          </div>
+        </div>
+        <div class="acc__body">
       <div class="filter-bar">
         <input type="text" id="kasSearch" class="select" placeholder="Cari nama" style="flex:1; min-width:200px;">
         <select id="kasFilterStatus" class="select">
@@ -34,16 +44,22 @@
 
       <div class="kas-list" id="kasList"></div>
 
-      <div class="view-head" style="margin-top:36px;">
-        <div>
-          <h2>Buku Kas — Pemasukan &amp; Pengeluaran</h2>
-          <p class="view-sub">Catatan pemasukan lain (selain iuran bulanan) dan pengeluaran kas kelas. Saldo dihitung otomatis dari iuran + pemasukan lain − pengeluaran.</p>
-        </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn--primary admin-only" id="openKasTxModal">+ Transaksi</button>
         </div>
       </div>
 
+      <!-- Buku kas -->
+      <div class="acc" id="accBukuKas">
+        <div class="acc__head" role="button" tabindex="0">
+          <span class="acc__chev"></span>
+          <div class="acc__title">
+            <h3>Buku Kas — Pemasukan &amp; Pengeluaran <span class="acc__count" data-count-for="kasTxList">0</span></h3>
+            <p>Pemasukan lain (selain iuran) dan pengeluaran. Saldo = iuran + pemasukan lain − pengeluaran.</p>
+          </div>
+          <div class="acc__actions">
+            <button class="btn btn--primary btn--sm admin-only" id="openKasTxModal">+ Transaksi</button>
+          </div>
+        </div>
+        <div class="acc__body">
       <div class="stat-row kas-stats">
         <div class="stat">
           <span class="stat__num" id="kasSaldo">Rp0</span>
@@ -60,4 +76,7 @@
       </div>
 
       <div class="kas-tx-list" id="kasTxList"></div>
+        </div>
+      </div>
+
     </section>

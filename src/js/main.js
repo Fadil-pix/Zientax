@@ -1564,6 +1564,7 @@ const CATEGORY_BADGE = { teori:'badge--teori', kejuruan:'badge--kejuruan', olahr
 function renderJadwal(){
   const scheduleBlock = SCHEDULES[jadwalTabBlok];
   const container = document.getElementById('jadwalDays');
+  const todayDayKey = DAY_ORDER[(new Date().getDay() + 6) % 7]; // Senin=0, Sabtu/Minggu -> undefined
   container.innerHTML = DAY_ORDER.map(dayKey => {
     const rows = buildDayRows(dayKey, scheduleBlock);
     const roomsUsed = [...new Set(rows.filter(r=>r.type==='subject').map(r=>r.room))].join(' · ');
@@ -1586,9 +1587,10 @@ function renderJadwal(){
       </div>`;
     }).join('');
 
-    return `<div class="day-card">
-      <div class="day-card__head"><h4>${DAY_LABELS[dayKey]}</h4><span class="day-card__room">${roomsUsed}</span></div>
-      <div class="day-card__body">${rowsHTML || '<div class="slot-row"><span class="slot-info">Tidak ada jadwal</span></div>'}</div>
+    const isToday = dayKey === todayDayKey;
+    return `<div class="day-card acc${isToday ? ' is-open' : ''}">
+      <div class="day-card__head acc__head" role="button" tabindex="0" aria-expanded="${isToday}"><span class="acc__chev"></span><h4>${DAY_LABELS[dayKey]}${isToday ? ' <span class="acc__count">hari ini</span>' : ''}</h4><span class="day-card__room">${roomsUsed}</span></div>
+      <div class="day-card__body acc__body">${rowsHTML || '<div class="slot-row"><span class="slot-info">Tidak ada jadwal</span></div>'}</div>
     </div>`;
   }).join('');
 }
@@ -2126,4 +2128,5 @@ function init(){
 // partial ke DOM (lihat src/js/partials-loader.js), baru init() dijalankan.
 // Ini menggantikan 'DOMContentLoaded' karena konten HTML sekarang dimuat
 // secara async lewat fetch().
-document.addEventListener('partials:ready', init);
+if (window.__partialsReady) init();   // partial sudah selesai dimuat sebelum main.js siap
+else document.addEventListener('partials:ready', init, { once: true });

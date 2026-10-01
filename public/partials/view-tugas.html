@@ -22,17 +22,32 @@
       </div>
 
       <div class="kanban" id="kanban">
-        <div class="kanban__col" data-status="belum">
-          <div class="kanban__head"><span class="kanban__dot kanban__dot--belum"></span>Belum Dikerjakan <span class="kanban__count" id="countBelum">0</span></div>
-          <div class="kanban__list" id="listBelum"></div>
+        <div class="kanban__col acc" data-status="belum">
+          <div class="acc__head" role="button" tabindex="0">
+            <span class="acc__chev"></span>
+            <div class="kanban__head"><span class="kanban__dot kanban__dot--belum"></span>Belum Dikerjakan <span class="kanban__count" id="countBelum">0</span></div>
+          </div>
+          <div class="acc__body">
+            <div class="kanban__list" id="listBelum"></div>
+          </div>
         </div>
-        <div class="kanban__col" data-status="sedang">
-          <div class="kanban__head"><span class="kanban__dot kanban__dot--sedang"></span>Sedang Dikerjakan <span class="kanban__count" id="countSedang">0</span></div>
-          <div class="kanban__list" id="listSedang"></div>
+        <div class="kanban__col acc" data-status="sedang">
+          <div class="acc__head" role="button" tabindex="0">
+            <span class="acc__chev"></span>
+            <div class="kanban__head"><span class="kanban__dot kanban__dot--sedang"></span>Sedang Dikerjakan <span class="kanban__count" id="countSedang">0</span></div>
+          </div>
+          <div class="acc__body">
+            <div class="kanban__list" id="listSedang"></div>
+          </div>
         </div>
-        <div class="kanban__col" data-status="selesai">
-          <div class="kanban__head"><span class="kanban__dot kanban__dot--selesai"></span>Selesai <span class="kanban__count" id="countSelesai">0</span></div>
-          <div class="kanban__list" id="listSelesai"></div>
+        <div class="kanban__col acc" data-status="selesai">
+          <div class="acc__head" role="button" tabindex="0">
+            <span class="acc__chev"></span>
+            <div class="kanban__head"><span class="kanban__dot kanban__dot--selesai"></span>Selesai <span class="kanban__count" id="countSelesai">0</span></div>
+          </div>
+          <div class="acc__body">
+            <div class="kanban__list" id="listSelesai"></div>
+          </div>
         </div>
       </div>
     </section>

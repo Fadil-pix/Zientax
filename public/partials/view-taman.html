@@ -16,42 +16,54 @@
       </div>
 
       <!-- Daftar Tanaman -->
-      <div class="view-head" style="margin-top:32px;">
-        <div>
-          <h2>Daftar Tanaman</h2>
-          <p class="view-sub">Koleksi tanaman di taman kelas, lengkap dengan QR Code yang bisa dicetak dan ditempel di tiap tanaman.</p>
+      <div class="acc" id="accPlants">
+        <div class="acc__head" role="button" tabindex="0">
+          <span class="acc__chev"></span>
+          <div class="acc__title">
+            <h3>Daftar Tanaman <span class="acc__count" data-count-for="plantGrid">0</span></h3>
+            <p>Koleksi tanaman di taman kelas, lengkap dengan QR Code yang bisa dicetak dan ditempel di tiap tanaman.</p>
+          </div>
+          <div class="acc__actions">
+            <button class="btn btn--primary btn--sm admin-only" id="openPlantModal">+ Tanaman Baru</button>
+          </div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn--primary admin-only" id="openPlantModal">+ Tanaman Baru</button>
+        <div class="acc__body">
+          <div class="plant-grid" id="plantGrid"></div>
         </div>
       </div>
-
-      <div class="plant-grid" id="plantGrid"></div>
 
       <!-- Kegiatan Selasa Asri -->
-      <div class="view-head" style="margin-top:36px;">
-        <div>
-          <h2>Kegiatan "Selasa Asri"</h2>
-          <p class="view-sub">Dokumentasi kegiatan bersih-bersih &amp; perawatan taman tiap Selasa pagi. Semua siswa bisa unggah dokumentasi (bisa lebih dari 1 foto).</p>
+      <div class="acc" id="accSelasa">
+        <div class="acc__head" role="button" tabindex="0">
+          <span class="acc__chev"></span>
+          <div class="acc__title">
+            <h3>Kegiatan "Selasa Asri" <span class="acc__count" data-count-for="selasaAsriList">0</span></h3>
+            <p>Dokumentasi kegiatan bersih-bersih &amp; perawatan taman tiap Selasa pagi. Semua siswa bisa unggah dokumentasi.</p>
+          </div>
+          <div class="acc__actions">
+            <button class="btn btn--primary btn--sm" id="openKegiatanModal">+ Tambah Kegiatan</button>
+          </div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn--primary" id="openKegiatanModal">+ Tambah Kegiatan</button>
+        <div class="acc__body">
+          <div class="activity-list" id="selasaAsriList"></div>
         </div>
       </div>
-
-      <div class="activity-list" id="selasaAsriList"></div>
 
       <!-- Piket Harian -->
-      <div class="view-head" style="margin-top:36px;">
-        <div>
-          <h2>Piket Harian Taman</h2>
-          <p class="view-sub">Catatan piket harian merawat taman (menyiram, menyiangi, membersihkan). Petugas piket bisa unggah dokumentasi (bisa lebih dari 1 foto).</p>
+      <div class="acc" id="accPiket">
+        <div class="acc__head" role="button" tabindex="0">
+          <span class="acc__chev"></span>
+          <div class="acc__title">
+            <h3>Piket Harian Taman <span class="acc__count" data-count-for="piketHarianList">0</span></h3>
+            <p>Catatan piket harian merawat taman (menyiram, menyiangi, membersihkan). Petugas piket bisa unggah dokumentasi.</p>
+          </div>
+          <div class="acc__actions">
+            <button class="btn btn--primary btn--sm" id="openPiketModal">+ Tambah Piket</button>
+          </div>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button class="btn btn--primary" id="openPiketModal">+ Tambah Piket</button>
+        <div class="acc__body">
+          <div class="activity-list" id="piketHarianList"></div>
         </div>
       </div>
-
-      <div class="activity-list" id="piketHarianList"></div>
 
     </section>
