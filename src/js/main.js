@@ -10,20 +10,45 @@
    - partials-loader.js   -> menyuntik HTML partial dari /public/partials
    ========================================================================== */
 
-import { db, auth, colTasks, colCalEvents, colKas, colKasTx,
-  colTamanSettings, colTamanPlants, colTamanKegiatan, colTamanPiket
-} from './firebase-config.js';
 import {
-  doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, getDocs
-} from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
+  db,
+  auth,
+  colTasks,
+  colCalEvents,
+  colKas,
+  colKasTx,
+  colTamanSettings,
+  colTamanPlants,
+  colTamanKegiatan,
+  colTamanPiket,
+} from "./firebase-config.js";
 import {
-  signInWithEmailAndPassword, signOut, onAuthStateChanged
-} from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
+  doc,
+  addDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  onSnapshot,
+  query,
+  orderBy,
+  getDocs,
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
 import {
-  TIME_SLOTS, DAY_LABELS, DAY_ORDER, JS_DAY_TO_KEY,
-  SCHEDULE_UMUM, SCHEDULE_PRODUKTIF, SCHEDULES, getAllSubjects
-} from './data/schedule-data.js';
-import { CALENDAR_EVENTS, CAL_TYPE_LABEL } from './data/calendar-data.js';
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+import {
+  TIME_SLOTS,
+  DAY_LABELS,
+  DAY_ORDER,
+  JS_DAY_TO_KEY,
+  SCHEDULE_UMUM,
+  SCHEDULE_PRODUKTIF,
+  SCHEDULES,
+  getAllSubjects,
+} from "./data/schedule-data.js";
+import { CALENDAR_EVENTS, CAL_TYPE_LABEL } from "./data/calendar-data.js";
 
 /* ---------------------------------------------------------------------- */
 /* 0b. ADMIN LOGIN (Firebase Authentication)                              */
@@ -40,8 +65,8 @@ let isAdmin = false;
 // ke DOM oleh partials-loader.js. Kalau didaftarkan langsung di top-level
 // modul, callback-nya bisa saja tertembak duluan sebelum elemen seperti
 // #adminBadgeLabel ada di halaman.
-function registerAuthListener(){
-  onAuthStateChanged(auth, (user)=>{
+function registerAuthListener() {
+  onAuthStateChanged(auth, (user) => {
     isAdmin = !!user;
     updateAdminUI(user);
     renderTasks();
@@ -54,50 +79,50 @@ function registerAuthListener(){
   });
 }
 
-function updateAdminUI(user){
-  document.body.classList.toggle('is-admin', isAdmin);
-  const label = document.getElementById('adminBadgeLabel');
-  const badge = document.getElementById('adminBadge');
-  if (isAdmin){
+function updateAdminUI(user) {
+  document.body.classList.toggle("is-admin", isAdmin);
+  const label = document.getElementById("adminBadgeLabel");
+  const badge = document.getElementById("adminBadge");
+  if (isAdmin) {
     label.textContent = `Admin · Keluar`;
-    badge.title = 'Klik untuk logout';
+    badge.title = "Klik untuk logout";
   } else {
-    label.textContent = 'Login Admin';
-    badge.title = 'Login sebagai admin';
+    label.textContent = "Login Admin";
+    badge.title = "Login sebagai admin";
   }
 }
 
-function openAdminModal(){
-  document.getElementById('adminError').style.display = 'none';
-  document.getElementById('adminModalOverlay').classList.add('is-open');
+function openAdminModal() {
+  document.getElementById("adminError").style.display = "none";
+  document.getElementById("adminModalOverlay").classList.add("is-open");
 }
-function closeAdminModal(){
-  document.getElementById('adminModalOverlay').classList.remove('is-open');
-  document.getElementById('adminForm').reset();
+function closeAdminModal() {
+  document.getElementById("adminModalOverlay").classList.remove("is-open");
+  document.getElementById("adminForm").reset();
 }
 
-async function handleAdminFormSubmit(e){
+async function handleAdminFormSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById('adminEmail').value.trim();
-  const password = document.getElementById('adminPassword').value;
-  const errEl = document.getElementById('adminError');
-  errEl.style.display = 'none';
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
+  const errEl = document.getElementById("adminError");
+  errEl.style.display = "none";
   try {
     await signInWithEmailAndPassword(auth, email, password);
     closeAdminModal();
-  } catch(err){
+  } catch (err) {
     console.error(err);
-    errEl.textContent = 'Email atau password salah.';
-    errEl.style.display = 'block';
+    errEl.textContent = "Email atau password salah.";
+    errEl.style.display = "block";
   }
 }
 
-function showDbError(msg){
-  let bar = document.getElementById('dbErrorBar');
-  if (!bar){
-    bar = document.createElement('div');
-    bar.id = 'dbErrorBar';
-    bar.className = 'storage-warning';
+function showDbError(msg) {
+  let bar = document.getElementById("dbErrorBar");
+  if (!bar) {
+    bar = document.createElement("div");
+    bar.id = "dbErrorBar";
+    bar.className = "storage-warning";
     document.body.prepend(bar);
   }
   bar.textContent = msg;
@@ -107,84 +132,147 @@ function showDbError(msg){
 /* 0b. PENYIMPANAN LOKAL (localStorage) — hanya untuk preferensi tampilan  */
 /*     per-perangkat: tema & blok aktif yang sedang dilihat.               */
 /* ---------------------------------------------------------------------- */
-const STORAGE_KEY_THEME = 'xipplga_theme';
-const STORAGE_KEY_BLOK = 'xipplga_blok_aktif';
-const STORAGE_KEY_JADWAL_BLOK = 'xipplga_jadwal_blok_tab';
+const STORAGE_KEY_THEME = "xipplga_theme";
+const STORAGE_KEY_BLOK = "xipplga_blok_aktif";
+const STORAGE_KEY_JADWAL_BLOK = "xipplga_jadwal_blok_tab";
 
-function storageAvailable(){
+function storageAvailable() {
   try {
-    const k = '__storage_test__';
-    localStorage.setItem(k, '1');
+    const k = "__storage_test__";
+    localStorage.setItem(k, "1");
     localStorage.removeItem(k);
     return true;
-  } catch(e){ return false; }
+  } catch (e) {
+    return false;
+  }
 }
 const HAS_STORAGE = storageAvailable();
 
 /* ---------- Acara kalender tambahan (Firestore, collection 'calendarEvents') ---------- */
 let customEvents = []; // disinkron realtime dari Firestore
 
-function allEvents(){ return [...CALENDAR_EVENTS, ...customEvents]; }
+function allEvents() {
+  return [...CALENDAR_EVENTS, ...customEvents];
+}
 
-function subscribeCalEvents(){
-  onSnapshot(colCalEvents, (snap)=>{
-    customEvents = snap.docs.map(d => ({ id: d.id, custom:true, ...d.data() }));
-    renderCalendar();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat acara kalender dari database. Cek koneksi internet & konfigurasi Firebase.');
-  });
+function subscribeCalEvents() {
+  onSnapshot(
+    colCalEvents,
+    (snap) => {
+      customEvents = snap.docs.map((d) => ({
+        id: d.id,
+        custom: true,
+        ...d.data(),
+      }));
+      renderCalendar();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat acara kalender dari database. Cek koneksi internet & konfigurasi Firebase.",
+      );
+    },
+  );
 }
 
 /* ---------------------------------------------------------------------- */
 /* 5. STATE                                                                */
 /* ---------------------------------------------------------------------- */
-let currentBlok = 'umum';          // blok aktif untuk dashboard status
-let jadwalTabBlok = 'umum';        // tab aktif di halaman Jadwal
-let calViewDate = new Date();      // bulan yang sedang ditampilkan di kalender
+let currentBlok = "umum"; // blok aktif untuk dashboard status
+let jadwalTabBlok = "umum"; // tab aktif di halaman Jadwal
+let calViewDate = new Date(); // bulan yang sedang ditampilkan di kalender
 
 const DEFAULT_TASKS = [
-  { subject:'SaaS', title:'Laporan Praktikum Deployment SaaS', deadline:'2026-08-22', type:'Kelompok', desc:'Deploy aplikasi sederhana ke platform SaaS pilihan, sertakan dokumentasi.', status:'sedang' },
-  { subject:'Matematika', title:'Latihan Soal Trigonometri Bab 3', deadline:'2026-08-25', type:'Individu', desc:'', status:'belum' },
-  { subject:'Bahasa Indonesia', title:'Menyusun Teks Eksposisi', deadline:'2026-08-21', type:'Individu', desc:'Topik bebas, minimal 500 kata.', status:'belum' },
-  { subject:'PaaS', title:'Konfigurasi Container pada Platform PaaS', deadline:'2026-08-29', type:'Kelompok', desc:'', status:'selesai' },
-  { subject:'Sejarah', title:'Rangkuman Bab Kolonialisme di Indonesia', deadline:'2026-08-20', type:'Individu', desc:'', status:'sedang' },
-  { subject:'SIoT', title:'Rancangan Sistem Sensor IoT Sederhana', deadline:'2026-09-02', type:'Kelompok', desc:'', status:'belum' },
+  {
+    subject: "SaaS",
+    title: "Laporan Praktikum Deployment SaaS",
+    deadline: "2026-08-22",
+    type: "Kelompok",
+    desc: "Deploy aplikasi sederhana ke platform SaaS pilihan, sertakan dokumentasi.",
+    status: "sedang",
+  },
+  {
+    subject: "Matematika",
+    title: "Latihan Soal Trigonometri Bab 3",
+    deadline: "2026-08-25",
+    type: "Individu",
+    desc: "",
+    status: "belum",
+  },
+  {
+    subject: "Bahasa Indonesia",
+    title: "Menyusun Teks Eksposisi",
+    deadline: "2026-08-21",
+    type: "Individu",
+    desc: "Topik bebas, minimal 500 kata.",
+    status: "belum",
+  },
+  {
+    subject: "PaaS",
+    title: "Konfigurasi Container pada Platform PaaS",
+    deadline: "2026-08-29",
+    type: "Kelompok",
+    desc: "",
+    status: "selesai",
+  },
+  {
+    subject: "Sejarah",
+    title: "Rangkuman Bab Kolonialisme di Indonesia",
+    deadline: "2026-08-20",
+    type: "Individu",
+    desc: "",
+    status: "sedang",
+  },
+  {
+    subject: "SIoT",
+    title: "Rancangan Sistem Sensor IoT Sederhana",
+    deadline: "2026-09-02",
+    type: "Kelompok",
+    desc: "",
+    status: "belum",
+  },
 ];
 
-function showStorageWarning(){
+function showStorageWarning() {
   if (HAS_STORAGE) return;
-  const bar = document.createElement('div');
-  bar.className = 'storage-warning';
-  bar.innerHTML = 'Penyimpanan lokal browser tidak tersedia, jadi preferensi tampilan (tema & blok aktif) tidak akan tersimpan setelah halaman ditutup/di-refresh. Data tugas, kas, dan acara kalender tetap aman karena disimpan di database online.';
+  const bar = document.createElement("div");
+  bar.className = "storage-warning";
+  bar.innerHTML =
+    "Penyimpanan lokal browser tidak tersedia, jadi preferensi tampilan (tema & blok aktif) tidak akan tersimpan setelah halaman ditutup/di-refresh. Data tugas, kas, dan acara kalender tetap aman karena disimpan di database online.";
   document.body.prepend(bar);
 }
 
 /* ---------- Tugas (Firestore, collection 'tasks') ---------- */
 let tasks = []; // disinkron realtime dari Firestore
 
-async function seedDefaultTasksIfEmpty(){
+async function seedDefaultTasksIfEmpty() {
   const snap = await getDocs(colTasks);
   if (!snap.empty) return;
-  for (const t of DEFAULT_TASKS){
+  for (const t of DEFAULT_TASKS) {
     await addDoc(colTasks, t);
   }
 }
 
-function subscribeTasks(){
-  onSnapshot(colTasks, (snap)=>{
-    tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    renderTasks();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat data tugas dari database. Cek koneksi internet & konfigurasi Firebase (firebaseConfig) di script.js.');
-  });
+function subscribeTasks() {
+  onSnapshot(
+    colTasks,
+    (snap) => {
+      tasks = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderTasks();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat data tugas dari database. Cek koneksi internet & konfigurasi Firebase (firebaseConfig) di script.js.",
+      );
+    },
+  );
 }
 
 /* Ambil daftar foto suatu tugas sebagai array data URL.
    Mendukung data lama yang cuma punya field `photoData` (foto tunggal)
    maupun data baru yang pakai field `photos` (array, bisa lebih dari 1). */
-function getTaskPhotos(t){
+function getTaskPhotos(t) {
   if (!t) return [];
   if (Array.isArray(t.photos)) return t.photos;
   if (t.photoData) return [t.photoData];
@@ -193,20 +281,24 @@ function getTaskPhotos(t){
 
 /* Render grid thumbnail foto (dipakai di form Tugas Baru/Edit & modal Kelola Foto).
    photosArray: array data URL. onRemove(index): dipanggil saat tombol × diklik. */
-function renderPhotoGrid(container, photosArray, onRemove){
-  if (!photosArray.length){
-    container.innerHTML = '';
-    container.style.display = 'none';
+function renderPhotoGrid(container, photosArray, onRemove) {
+  if (!photosArray.length) {
+    container.innerHTML = "";
+    container.style.display = "none";
     return;
   }
-  container.style.display = 'grid';
-  container.innerHTML = photosArray.map((src, idx) => `
+  container.style.display = "grid";
+  container.innerHTML = photosArray
+    .map(
+      (src, idx) => `
     <div class="photo-grid__item">
       <img src="${src}" alt="Foto ${idx + 1}">
       <button type="button" class="photo-grid__remove" data-idx="${idx}" title="Hapus foto ini">&times;</button>
     </div>
-  `).join('');
-  container.querySelectorAll('.photo-grid__remove').forEach(btn=>{
+  `,
+    )
+    .join("");
+  container.querySelectorAll(".photo-grid__remove").forEach((btn) => {
     btn.onclick = () => onRemove(Number(btn.dataset.idx));
   });
 }
@@ -218,151 +310,179 @@ function renderPhotoGrid(container, photosArray, onRemove){
 /*     tanpa login (allow create: if true di Firestore Rules), tapi       */
 /*     hapus data tetap khusus admin.                                     */
 /* ---------------------------------------------------------------------- */
-let tamanSambutan = { title:'', caption:'', photo:'' };
-let tamanPlants = [];       // disinkron realtime dari Firestore
-let selasaAsriList = [];    // disinkron realtime dari Firestore
-let piketHarianList = [];   // disinkron realtime dari Firestore
-let pendingPlantDeepLink = new URLSearchParams(location.search).get('tanaman');
+let tamanSambutan = { title: "", caption: "", photo: "" };
+let tamanPlants = []; // disinkron realtime dari Firestore
+let selasaAsriList = []; // disinkron realtime dari Firestore
+let piketHarianList = []; // disinkron realtime dari Firestore
+let pendingPlantDeepLink = new URLSearchParams(location.search).get("tanaman");
 
 /* Ambil daftar foto generik (dipakai tanaman, kegiatan, piket) — sama pola
    dengan getTaskPhotos di atas. */
-function getPhotos(item){
-  return (item && Array.isArray(item.photos)) ? item.photos : [];
+function getPhotos(item) {
+  return item && Array.isArray(item.photos) ? item.photos : [];
 }
 
 /* ---------- Sambutan ---------- */
-function subscribeTamanSettings(){
-  onSnapshot(doc(db, 'tamanSettings', 'welcome'), (snap)=>{
-    tamanSambutan = snap.exists() ? snap.data() : { title:'', caption:'', photo:'' };
-    renderTamanSambutan();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat sambutan taman dari database. Cek koneksi internet.');
-  });
+function subscribeTamanSettings() {
+  onSnapshot(
+    doc(db, "tamanSettings", "welcome"),
+    (snap) => {
+      tamanSambutan = snap.exists()
+        ? snap.data()
+        : { title: "", caption: "", photo: "" };
+      renderTamanSambutan();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat sambutan taman dari database. Cek koneksi internet.",
+      );
+    },
+  );
 }
 
-function renderTamanSambutan(){
-  const titleEl = document.getElementById('tamanHeroTitle');
+function renderTamanSambutan() {
+  const titleEl = document.getElementById("tamanHeroTitle");
   if (!titleEl) return;
-  document.getElementById('tamanHeroTitle').textContent = tamanSambutan.title || 'Selamat Datang di Taman Kelas';
-  document.getElementById('tamanHeroCaption').textContent = tamanSambutan.caption ||
+  document.getElementById("tamanHeroTitle").textContent =
+    tamanSambutan.title || "Selamat Datang di Taman Kelas";
+  document.getElementById("tamanHeroCaption").textContent =
+    tamanSambutan.caption ||
     'Belum ada sambutan. Admin dapat menambahkan foto & sambutan taman lewat tombol "Edit Sambutan".';
-  const photoEl = document.getElementById('tamanHeroPhoto');
-  const heroEl = document.getElementById('tamanHero');
-  const placeholderEl = document.getElementById('tamanHeroPlaceholder');
-  if (tamanSambutan.photo){
+  const photoEl = document.getElementById("tamanHeroPhoto");
+  const heroEl = document.getElementById("tamanHero");
+  const placeholderEl = document.getElementById("tamanHeroPlaceholder");
+  if (tamanSambutan.photo) {
     photoEl.src = tamanSambutan.photo;
-    photoEl.style.display = 'block';
-    placeholderEl.style.display = 'none';
-    if (heroEl){
-      heroEl.classList.add('has-photo');
-      heroEl.title = 'Klik untuk melihat foto penuh';
+    photoEl.style.display = "block";
+    placeholderEl.style.display = "none";
+    if (heroEl) {
+      heroEl.classList.add("has-photo");
+      heroEl.title = "Klik untuk melihat foto penuh";
     }
   } else {
-    photoEl.style.display = 'none';
-    placeholderEl.style.display = 'flex';
-    if (heroEl){
-      heroEl.classList.remove('has-photo');
-      heroEl.removeAttribute('title');
+    photoEl.style.display = "none";
+    placeholderEl.style.display = "flex";
+    if (heroEl) {
+      heroEl.classList.remove("has-photo");
+      heroEl.removeAttribute("title");
     }
   }
 }
 
-let newSambutanPhoto = '';
+let newSambutanPhoto = "";
 
-function openSambutanModal(){
-  document.getElementById('sambutanTitle').value = tamanSambutan.title || '';
-  document.getElementById('sambutanCaption').value = tamanSambutan.caption || '';
-  newSambutanPhoto = tamanSambutan.photo || '';
+function openSambutanModal() {
+  document.getElementById("sambutanTitle").value = tamanSambutan.title || "";
+  document.getElementById("sambutanCaption").value =
+    tamanSambutan.caption || "";
+  newSambutanPhoto = tamanSambutan.photo || "";
   renderSambutanPhotoPreview();
-  document.getElementById('sambutanModalOverlay').classList.add('is-open');
+  document.getElementById("sambutanModalOverlay").classList.add("is-open");
 }
-function closeSambutanModal(){
-  document.getElementById('sambutanModalOverlay').classList.remove('is-open');
-  document.getElementById('sambutanForm').reset();
-  document.getElementById('sambutanPhotoPreviewWrap').innerHTML = '';
-  document.getElementById('sambutanPhotoPreviewWrap').style.display = 'none';
-  newSambutanPhoto = '';
+function closeSambutanModal() {
+  document.getElementById("sambutanModalOverlay").classList.remove("is-open");
+  document.getElementById("sambutanForm").reset();
+  document.getElementById("sambutanPhotoPreviewWrap").innerHTML = "";
+  document.getElementById("sambutanPhotoPreviewWrap").style.display = "none";
+  newSambutanPhoto = "";
 }
-function renderSambutanPhotoPreview(){
-  renderPhotoGrid(document.getElementById('sambutanPhotoPreviewWrap'), newSambutanPhoto ? [newSambutanPhoto] : [], ()=>{
-    newSambutanPhoto = '';
-    renderSambutanPhotoPreview();
-  });
+function renderSambutanPhotoPreview() {
+  renderPhotoGrid(
+    document.getElementById("sambutanPhotoPreviewWrap"),
+    newSambutanPhoto ? [newSambutanPhoto] : [],
+    () => {
+      newSambutanPhoto = "";
+      renderSambutanPhotoPreview();
+    },
+  );
 }
-async function handleSambutanPhotoChange(e){
+async function handleSambutanPhotoChange(e) {
   const file = (e.target.files || [])[0];
   if (!file) return;
   try {
     newSambutanPhoto = await compressImageFile(file, 1400);
-  } catch(err){
+  } catch (err) {
     console.error(err);
-    alert('Gagal memproses foto. Coba pilih foto lain.');
+    alert("Gagal memproses foto. Coba pilih foto lain.");
   }
-  e.target.value = '';
+  e.target.value = "";
   renderSambutanPhotoPreview();
 }
-async function handleSambutanFormSubmit(e){
+async function handleSambutanFormSubmit(e) {
   e.preventDefault();
-  const title = document.getElementById('sambutanTitle').value.trim();
-  const caption = document.getElementById('sambutanCaption').value.trim();
+  const title = document.getElementById("sambutanTitle").value.trim();
+  const caption = document.getElementById("sambutanCaption").value.trim();
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   try {
-    await setDoc(doc(db, 'tamanSettings', 'welcome'), { title, caption, photo: newSambutanPhoto }, { merge: true });
+    await setDoc(
+      doc(db, "tamanSettings", "welcome"),
+      { title, caption, photo: newSambutanPhoto },
+      { merge: true },
+    );
     closeSambutanModal();
-  } catch(err){
+  } catch (err) {
     console.error(err);
-    showDbError('Gagal menyimpan sambutan taman ke database. Cek koneksi internet.');
+    showDbError(
+      "Gagal menyimpan sambutan taman ke database. Cek koneksi internet.",
+    );
   } finally {
     submitBtn.disabled = false;
   }
 }
 
 /* ---------- Daftar Tanaman ---------- */
-function subscribeTamanPlants(){
-  onSnapshot(colTamanPlants, (snap)=>{
-    tamanPlants = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a,b) => (a.name||'').localeCompare(b.name||''));
-    renderPlantGrid();
-    updateTamanHeroStats();
-    maybeOpenPendingPlantDeepLink();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat daftar tanaman dari database. Cek koneksi internet.');
-  });
+function subscribeTamanPlants() {
+  onSnapshot(
+    colTamanPlants,
+    (snap) => {
+      tamanPlants = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+      renderPlantGrid();
+      updateTamanHeroStats();
+      maybeOpenPendingPlantDeepLink();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat daftar tanaman dari database. Cek koneksi internet.",
+      );
+    },
+  );
 }
 
 /* Jika situs dibuka lewat link hasil scan QR (?tanaman=id), langsung
    pindah ke menu Taman & buka detail tanaman terkait. */
-function maybeOpenPendingPlantDeepLink(){
+function maybeOpenPendingPlantDeepLink() {
   if (!pendingPlantDeepLink) return;
-  const plant = tamanPlants.find(p => p.id === pendingPlantDeepLink);
+  const plant = tamanPlants.find((p) => p.id === pendingPlantDeepLink);
   if (!plant) return;
   pendingPlantDeepLink = null;
-  setActiveView('taman');
+  setActiveView("taman");
   openPlantDetailModal(plant.id);
 }
 
-function renderPlantGrid(){
-  const grid = document.getElementById('plantGrid');
+function renderPlantGrid() {
+  const grid = document.getElementById("plantGrid");
   if (!grid) return;
-  if (!tamanPlants.length){
+  if (!tamanPlants.length) {
     grid.innerHTML = `<p class="empty-note">Belum ada tanaman terdaftar.</p>`;
     return;
   }
-  grid.innerHTML = tamanPlants.map(plantCardHTML).join('');
+  grid.innerHTML = tamanPlants.map(plantCardHTML).join("");
   bindPlantCardButtons();
 }
 
-function plantCardHTML(p){
+function plantCardHTML(p) {
   const photos = getPhotos(p);
   const thumb = photos.length
     ? `<img src="${photos[0]}" alt="Foto ${escapeHTML(p.name)}" loading="lazy">`
     : `<div class="plant-card__photo-empty">Belum ada foto</div>`;
 
   let actions = `<button class="btn btn--sm" data-action="plant-detail" data-id="${p.id}">Lihat &amp; QR</button>`;
-  if (isAdmin){
+  if (isAdmin) {
     actions += `<button class="btn btn--sm" data-action="plant-edit" data-id="${p.id}">Edit</button>`;
     actions += `<button class="btn btn--sm" data-action="plant-delete" data-id="${p.id}">Hapus</button>`;
   }
@@ -372,35 +492,35 @@ function plantCardHTML(p){
       <button type="button" class="plant-card__photo" data-action="plant-detail" data-id="${p.id}">${thumb}</button>
       <div class="plant-card__body">
         <div class="plant-card__name">${escapeHTML(p.name)}</div>
-        ${p.latin ? `<div class="plant-card__latin">${escapeHTML(p.latin)}</div>` : ''}
+        ${p.latin ? `<div class="plant-card__latin">${escapeHTML(p.latin)}</div>` : ""}
         <div class="plant-card__meta">
-          ${p.category ? `<span class="badge badge--sage">${escapeHTML(p.category)}</span>` : ''}
-          ${p.location ? `<span class="badge badge--cyan">${escapeHTML(p.location)}</span>` : ''}
+          ${p.category ? `<span class="badge badge--sage">${escapeHTML(p.category)}</span>` : ""}
+          ${p.location ? `<span class="badge badge--cyan">${escapeHTML(p.location)}</span>` : ""}
         </div>
         <div class="plant-card__actions">${actions}</div>
       </div>
     </div>`;
 }
 
-function bindPlantCardButtons(){
-  document.querySelectorAll('[data-action="plant-detail"]').forEach(btn=>{
+function bindPlantCardButtons() {
+  document.querySelectorAll('[data-action="plant-detail"]').forEach((btn) => {
     btn.onclick = () => openPlantDetailModal(btn.dataset.id);
   });
-  document.querySelectorAll('[data-action="plant-edit"]').forEach(btn=>{
+  document.querySelectorAll('[data-action="plant-edit"]').forEach((btn) => {
     btn.onclick = () => openEditPlantModal(btn.dataset.id);
   });
-  document.querySelectorAll('[data-action="plant-delete"]').forEach(btn=>{
+  document.querySelectorAll('[data-action="plant-delete"]').forEach((btn) => {
     btn.onclick = () => deletePlant(btn.dataset.id);
   });
 }
 
-async function deletePlant(id){
-  if (!confirm('Hapus tanaman ini dari daftar?')) return;
+async function deletePlant(id) {
+  if (!confirm("Hapus tanaman ini dari daftar?")) return;
   try {
-    await deleteDoc(doc(db, 'tamanPlants', id));
-  } catch(err){
+    await deleteDoc(doc(db, "tamanPlants", id));
+  } catch (err) {
     console.error(err);
-    showDbError('Gagal menghapus tanaman dari database. Cek koneksi internet.');
+    showDbError("Gagal menghapus tanaman dari database. Cek koneksi internet.");
   }
 }
 
@@ -408,60 +528,74 @@ async function deletePlant(id){
 let newPlantPhotos = [];
 let editingPlantId = null;
 
-function openPlantModal(){ document.getElementById('plantModalOverlay').classList.add('is-open'); }
+function openPlantModal() {
+  document.getElementById("plantModalOverlay").classList.add("is-open");
+}
 
-function openEditPlantModal(id){
-  const p = tamanPlants.find(x => x.id === id);
+function openEditPlantModal(id) {
+  const p = tamanPlants.find((x) => x.id === id);
   if (!p) return;
   editingPlantId = id;
-  document.getElementById('plantName').value = p.name || '';
-  document.getElementById('plantLatin').value = p.latin || '';
-  document.getElementById('plantCategory').value = p.category || 'Pohon';
-  document.getElementById('plantLocation').value = p.location || '';
-  document.getElementById('plantDesc').value = p.desc || '';
+  document.getElementById("plantName").value = p.name || "";
+  document.getElementById("plantLatin").value = p.latin || "";
+  document.getElementById("plantCategory").value = p.category || "Pohon";
+  document.getElementById("plantLocation").value = p.location || "";
+  document.getElementById("plantDesc").value = p.desc || "";
   newPlantPhotos = getPhotos(p).slice();
   renderPlantPhotoGrid();
-  document.getElementById('plantModalTitle').textContent = 'Edit Tanaman';
-  document.querySelector('#plantForm button[type="submit"]').textContent = 'Simpan Perubahan';
+  document.getElementById("plantModalTitle").textContent = "Edit Tanaman";
+  document.querySelector('#plantForm button[type="submit"]').textContent =
+    "Simpan Perubahan";
   openPlantModal();
 }
 
-function closePlantModal(){
-  document.getElementById('plantModalOverlay').classList.remove('is-open');
-  document.getElementById('plantForm').reset();
+function closePlantModal() {
+  document.getElementById("plantModalOverlay").classList.remove("is-open");
+  document.getElementById("plantForm").reset();
   newPlantPhotos = [];
   editingPlantId = null;
-  document.getElementById('plantPhotoPreviewWrap').innerHTML = '';
-  document.getElementById('plantPhotoPreviewWrap').style.display = 'none';
-  document.getElementById('plantModalTitle').textContent = 'Tanaman Baru';
-  document.querySelector('#plantForm button[type="submit"]').textContent = 'Simpan Tanaman';
+  document.getElementById("plantPhotoPreviewWrap").innerHTML = "";
+  document.getElementById("plantPhotoPreviewWrap").style.display = "none";
+  document.getElementById("plantModalTitle").textContent = "Tanaman Baru";
+  document.querySelector('#plantForm button[type="submit"]').textContent =
+    "Simpan Tanaman";
 }
 
-function renderPlantPhotoGrid(){
-  renderPhotoGrid(document.getElementById('plantPhotoPreviewWrap'), newPlantPhotos, (idx)=>{
-    newPlantPhotos.splice(idx, 1);
-    renderPlantPhotoGrid();
-  });
+function renderPlantPhotoGrid() {
+  renderPhotoGrid(
+    document.getElementById("plantPhotoPreviewWrap"),
+    newPlantPhotos,
+    (idx) => {
+      newPlantPhotos.splice(idx, 1);
+      renderPlantPhotoGrid();
+    },
+  );
 }
 
-async function handlePlantPhotoChange(e){
+async function handlePlantPhotoChange(e) {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
-  for (const file of files){
-    try { newPlantPhotos.push(await compressImageFile(file)); }
-    catch(err){ console.error(err); alert('Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.'); }
+  for (const file of files) {
+    try {
+      newPlantPhotos.push(await compressImageFile(file));
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.",
+      );
+    }
   }
-  e.target.value = '';
+  e.target.value = "";
   renderPlantPhotoGrid();
 }
 
-function handlePlantFormSubmit(e){
+function handlePlantFormSubmit(e) {
   e.preventDefault();
-  const name = document.getElementById('plantName').value.trim();
-  const latin = document.getElementById('plantLatin').value.trim();
-  const category = document.getElementById('plantCategory').value;
-  const location = document.getElementById('plantLocation').value.trim();
-  const desc = document.getElementById('plantDesc').value.trim();
+  const name = document.getElementById("plantName").value.trim();
+  const latin = document.getElementById("plantLatin").value.trim();
+  const category = document.getElementById("plantCategory").value;
+  const location = document.getElementById("plantLocation").value.trim();
+  const desc = document.getElementById("plantDesc").value.trim();
   if (!name) return;
 
   // Firestore membatasi ukuran 1 dokumen maksimal ~1MB. Karena foto disimpan
@@ -470,69 +604,89 @@ function handlePlantFormSubmit(e){
   // alert, bukan diam-diam gagal tersimpan (fotonya sempat kelihatan di
   // preview tapi hilang lagi begitu dibuka ulang).
   const totalPhotoBytes = newPlantPhotos.reduce((sum, p) => sum + p.length, 0);
-  if (totalPhotoBytes > 700000){
-    alert('Total ukuran foto terlalu besar untuk disimpan (mendekati batas database). Kurangi jumlah foto atau pilih foto lain, lalu coba simpan lagi.');
+  if (totalPhotoBytes > 700000) {
+    alert(
+      "Total ukuran foto terlalu besar untuk disimpan (mendekati batas database). Kurangi jumlah foto atau pilih foto lain, lalu coba simpan lagi.",
+    );
     return;
   }
 
-  const data = { name, latin, category, location, desc, photos: newPlantPhotos };
+  const data = {
+    name,
+    latin,
+    category,
+    location,
+    desc,
+    photos: newPlantPhotos,
+  };
   const submitBtn = document.querySelector('#plantForm button[type="submit"]');
   submitBtn.disabled = true;
 
   const promise = editingPlantId
-    ? updateDoc(doc(db, 'tamanPlants', editingPlantId), data)
+    ? updateDoc(doc(db, "tamanPlants", editingPlantId), data)
     : addDoc(colTamanPlants, data);
 
   promise
-    .then(()=>{ closePlantModal(); })
-    .catch((err)=>{
-      console.error(err);
-      showDbError('Gagal menyimpan tanaman ke database. Cek koneksi internet & konfigurasi Firebase.');
+    .then(() => {
+      closePlantModal();
     })
-    .finally(()=>{ submitBtn.disabled = false; });
+    .catch((err) => {
+      console.error(err);
+      showDbError(
+        "Gagal menyimpan tanaman ke database. Cek koneksi internet & konfigurasi Firebase.",
+      );
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+    });
 }
 
 /* ---------- Modal Detail Tanaman + QR Code ---------- */
 let plantDetailCurrentId = null;
 
-function openPlantDetailModal(id){
-  const p = tamanPlants.find(x => x.id === id);
+function openPlantDetailModal(id) {
+  const p = tamanPlants.find((x) => x.id === id);
   if (!p) return;
   plantDetailCurrentId = id;
 
-  document.getElementById('plantDetailName').textContent = p.name || 'Tanaman';
-  const latinEl = document.getElementById('plantDetailLatin');
-  latinEl.textContent = p.latin || '';
-  latinEl.style.display = p.latin ? 'block' : 'none';
-  const catEl = document.getElementById('plantDetailCategory');
-  catEl.textContent = p.category || '';
-  catEl.style.display = p.category ? 'inline-block' : 'none';
-  const locEl = document.getElementById('plantDetailLocation');
-  locEl.textContent = p.location || '';
-  locEl.style.display = p.location ? 'inline-block' : 'none';
-  document.getElementById('plantDetailDesc').textContent = p.desc || 'Belum ada keterangan.';
+  document.getElementById("plantDetailName").textContent = p.name || "Tanaman";
+  const latinEl = document.getElementById("plantDetailLatin");
+  latinEl.textContent = p.latin || "";
+  latinEl.style.display = p.latin ? "block" : "none";
+  const catEl = document.getElementById("plantDetailCategory");
+  catEl.textContent = p.category || "";
+  catEl.style.display = p.category ? "inline-block" : "none";
+  const locEl = document.getElementById("plantDetailLocation");
+  locEl.textContent = p.location || "";
+  locEl.style.display = p.location ? "inline-block" : "none";
+  document.getElementById("plantDetailDesc").textContent =
+    p.desc || "Belum ada keterangan.";
 
   const photos = getPhotos(p);
-  const mainPhotoEl = document.getElementById('plantDetailMainPhoto');
-  const mainImgEl = document.getElementById('plantDetailMainImg');
-  const photoGrid = document.getElementById('plantDetailPhotoGrid');
+  const mainPhotoEl = document.getElementById("plantDetailMainPhoto");
+  const mainImgEl = document.getElementById("plantDetailMainImg");
+  const photoGrid = document.getElementById("plantDetailPhotoGrid");
 
-  if (photos.length){
+  if (photos.length) {
     // Foto utama besar di atas
     mainImgEl.src = photos[0];
     mainImgEl.alt = `Foto ${escapeHTML(p.name)}`;
-    mainPhotoEl.style.display = 'block';
-    mainPhotoEl.style.cursor = 'zoom-in';
+    mainPhotoEl.style.display = "block";
+    mainPhotoEl.style.cursor = "zoom-in";
     mainPhotoEl.onclick = () => openPhotoLightbox(photos, 0, p.name, p.desc);
 
     // Grid thumbnail (hanya tampil kalau lebih dari 1 foto)
-    if (photos.length > 1){
-      photoGrid.style.display = 'grid';
-      photoGrid.innerHTML = photos.map((src, idx) => `
+    if (photos.length > 1) {
+      photoGrid.style.display = "grid";
+      photoGrid.innerHTML = photos
+        .map(
+          (src, idx) => `
         <button type="button" class="photo-grid__item" data-idx="${idx}" style="border:none; padding:0; cursor:pointer;">
-          <img src="${src}" alt="Foto ${escapeHTML(p.name)} ${idx+1}">
-        </button>`).join('');
-      photoGrid.querySelectorAll('.photo-grid__item').forEach(btn=>{
+          <img src="${src}" alt="Foto ${escapeHTML(p.name)} ${idx + 1}">
+        </button>`,
+        )
+        .join("");
+      photoGrid.querySelectorAll(".photo-grid__item").forEach((btn) => {
         btn.onclick = () => {
           // Update foto utama & buka lightbox
           const idx = Number(btn.dataset.idx);
@@ -541,12 +695,12 @@ function openPlantDetailModal(id){
         };
       });
     } else {
-      photoGrid.style.display = 'none';
-      photoGrid.innerHTML = '';
+      photoGrid.style.display = "none";
+      photoGrid.innerHTML = "";
     }
   } else {
-    mainPhotoEl.style.display = 'none';
-    photoGrid.style.display = 'block';
+    mainPhotoEl.style.display = "none";
+    photoGrid.style.display = "block";
     photoGrid.innerHTML = `
       <div class="plant-detail__photo-empty">
         <span>Belum ada foto. Klik &quot;Edit&quot; untuk menambahkan foto tanaman ini.</span>
@@ -554,24 +708,25 @@ function openPlantDetailModal(id){
   }
 
   renderPlantQRCode(p);
-  document.getElementById('plantDetailModalOverlay').classList.add('is-open');
+  document.getElementById("plantDetailModalOverlay").classList.add("is-open");
 }
 
 /* Link permanen ke tanaman ini (dipakai sebagai isi QR Code) — saat
    dipindai, situs otomatis membuka menu Taman & detail tanaman ini. */
-function plantPermalink(id){
+function plantPermalink(id) {
   const url = new URL(location.href);
-  url.search = '';
-  url.hash = '';
-  url.searchParams.set('tanaman', id);
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("tanaman", id);
   return url.toString();
 }
 
-function renderPlantQRCode(p){
-  const holder = document.getElementById('plantQRCode');
-  holder.innerHTML = '';
-  if (typeof QRCode === 'undefined'){
-    holder.innerHTML = '<p class="empty-note">Gagal memuat generator QR Code (cek koneksi internet).</p>';
+function renderPlantQRCode(p) {
+  const holder = document.getElementById("plantQRCode");
+  holder.innerHTML = "";
+  if (typeof QRCode === "undefined") {
+    holder.innerHTML =
+      '<p class="empty-note">Gagal memuat generator QR Code (cek koneksi internet).</p>';
     return;
   }
   // Digenerate di resolusi tinggi (280px) supaya unduhan/cetak label tetap
@@ -580,14 +735,16 @@ function renderPlantQRCode(p){
     text: plantPermalink(p.id),
     width: 280,
     height: 280,
-    colorDark: '#000000',
-    colorLight: '#ffffff',
-    correctLevel: QRCode.CorrectLevel.M
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.M,
   });
 }
 
-function closePlantDetailModal(){
-  document.getElementById('plantDetailModalOverlay').classList.remove('is-open');
+function closePlantDetailModal() {
+  document
+    .getElementById("plantDetailModalOverlay")
+    .classList.remove("is-open");
   plantDetailCurrentId = null;
 }
 
@@ -595,37 +752,40 @@ function closePlantDetailModal(){
    tanaman lewat scan QR (lihat handlePlantDeepLink). Tombol ini menutup modal
    tersebut dan membawa mereka ke Dashboard supaya bisa menjelajahi menu lain
    di website kelas (tugas, kalender, kas, taman, dsb). */
-function exploreWebsite(){
+function exploreWebsite() {
   closePlantDetailModal();
-  setActiveView('dashboard');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  setActiveView("dashboard");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-function getPlantQRDataURL(){
-  const holder = document.getElementById('plantQRCode');
-  const canvas = holder.querySelector('canvas');
-  const img = holder.querySelector('img');
-  return canvas ? canvas.toDataURL('image/png') : (img ? img.src : null);
+function getPlantQRDataURL() {
+  const holder = document.getElementById("plantQRCode");
+  const canvas = holder.querySelector("canvas");
+  const img = holder.querySelector("img");
+  return canvas ? canvas.toDataURL("image/png") : img ? img.src : null;
 }
 
-function downloadPlantQR(){
+function downloadPlantQR() {
   const dataURL = getPlantQRDataURL();
   if (!dataURL) return;
-  const p = tamanPlants.find(x => x.id === plantDetailCurrentId);
-  const a = document.createElement('a');
+  const p = tamanPlants.find((x) => x.id === plantDetailCurrentId);
+  const a = document.createElement("a");
   a.href = dataURL;
-  a.download = `qr-${(p ? p.name : 'tanaman').toLowerCase().replace(/[^a-z0-9]+/g,'-') || 'tanaman'}.png`;
+  a.download = `qr-${(p ? p.name : "tanaman").toLowerCase().replace(/[^a-z0-9]+/g, "-") || "tanaman"}.png`;
   a.click();
 }
 
-function printPlantQR(){
+function printPlantQR() {
   const dataURL = getPlantQRDataURL();
   if (!dataURL) return;
-  const p = tamanPlants.find(x => x.id === plantDetailCurrentId);
-  const name = p ? escapeHTML(p.name) : 'Tanaman';
-  const latin = p && p.latin ? escapeHTML(p.latin) : '';
-  const win = window.open('', '_blank', 'width=420,height=520');
-  if (!win){ alert('Popup diblokir browser. Izinkan popup untuk mencetak label QR.'); return; }
+  const p = tamanPlants.find((x) => x.id === plantDetailCurrentId);
+  const name = p ? escapeHTML(p.name) : "Tanaman";
+  const latin = p && p.latin ? escapeHTML(p.latin) : "";
+  const win = window.open("", "_blank", "width=420,height=520");
+  if (!win) {
+    alert("Popup diblokir browser. Izinkan popup untuk mencetak label QR.");
+    return;
+  }
   win.document.write(`<!DOCTYPE html><html><head><title>Label ${name}</title>
     <style>
       body{ font-family:sans-serif; text-align:center; padding:24px; }
@@ -636,20 +796,20 @@ function printPlantQR(){
     </style></head><body>
       <img src="${dataURL}" alt="QR ${name}">
       <h2>${name}</h2>
-      ${latin ? `<p>${latin}</p>` : ''}
+      ${latin ? `<p>${latin}</p>` : ""}
       <script>window.onload = () => window.print();</script>
     </body></html>`);
   win.document.close();
 }
 
-function editPlantFromDetail(){
+function editPlantFromDetail() {
   if (!plantDetailCurrentId) return;
   const id = plantDetailCurrentId;
   closePlantDetailModal();
   openEditPlantModal(id);
 }
 
-function deletePlantFromDetail(){
+function deletePlantFromDetail() {
   if (!plantDetailCurrentId) return;
   const id = plantDetailCurrentId;
   closePlantDetailModal();
@@ -657,121 +817,152 @@ function deletePlantFromDetail(){
 }
 
 /* ---------- Hero Section: statistik & tombol aksi ---------- */
-function updateTamanHeroStats(){
-  const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
-  set('tamanStatPlants', tamanPlants.length);
-  set('tamanStatKegiatan', selasaAsriList.length);
-  set('tamanStatPiket', piketHarianList.length);
+function updateTamanHeroStats() {
+  const set = (id, n) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = n;
+  };
+  set("tamanStatPlants", tamanPlants.length);
+  set("tamanStatKegiatan", selasaAsriList.length);
+  set("tamanStatPiket", piketHarianList.length);
 }
 
 /* Buka accordion section tertentu di menu Taman lalu scroll ke sana. */
-function openTamanSection(accId){
+function openTamanSection(accId) {
   const acc = document.getElementById(accId);
   if (!acc) return;
-  acc.classList.add('is-open');
-  const head = acc.querySelector(':scope > .acc__head');
-  if (head) head.setAttribute('aria-expanded', 'true');
-  acc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  acc.classList.add("is-open");
+  const head = acc.querySelector(":scope > .acc__head");
+  if (head) head.setAttribute("aria-expanded", "true");
+  acc.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 /* ---------- QR Code Menu Taman ----------
    Isi QR = link website + ?menu=taman. Saat dipindai, handleMenuDeepLink()
    langsung membuka menu Taman. Cocok dicetak & dipasang di area taman. */
-function tamanMenuPermalink(){
+function tamanMenuPermalink() {
   const url = new URL(location.href);
-  url.search = '';
-  url.hash = '';
-  url.searchParams.set('menu', 'taman');
+  url.search = "";
+  url.hash = "";
+  url.searchParams.set("menu", "taman");
   return url.toString();
 }
 
-function isLocalAddress(){
+function isLocalAddress() {
   const h = location.hostname;
-  return location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '' ||
-    /^192\.168\./.test(h) || /^10\./.test(h) || h.endsWith('.local');
+  return (
+    location.protocol === "file:" ||
+    h === "localhost" ||
+    h === "127.0.0.1" ||
+    h === "" ||
+    /^192\.168\./.test(h) ||
+    /^10\./.test(h) ||
+    h.endsWith(".local")
+  );
 }
 
-function openTamanQRModal(){
+function openTamanQRModal() {
   const link = tamanMenuPermalink();
-  document.getElementById('tamanQRLink').value = link;
-  document.getElementById('tamanQRWarn').style.display = isLocalAddress() ? 'block' : 'none';
+  document.getElementById("tamanQRLink").value = link;
+  document.getElementById("tamanQRWarn").style.display = isLocalAddress()
+    ? "block"
+    : "none";
 
-  const holder = document.getElementById('tamanQRCode');
-  holder.innerHTML = '';
-  if (typeof QRCode === 'undefined'){
-    holder.innerHTML = '<p class="empty-note">Gagal memuat generator QR Code (cek koneksi internet).</p>';
+  const holder = document.getElementById("tamanQRCode");
+  holder.innerHTML = "";
+  if (typeof QRCode === "undefined") {
+    holder.innerHTML =
+      '<p class="empty-note">Gagal memuat generator QR Code (cek koneksi internet).</p>';
   } else {
     // Resolusi tinggi supaya tetap tajam saat dicetak besar (poster).
     new QRCode(holder, {
       text: link,
       width: 600,
       height: 600,
-      colorDark: '#000000',
-      colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.H
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.H,
     });
   }
-  document.getElementById('tamanQRModalOverlay').classList.add('is-open');
+  document.getElementById("tamanQRModalOverlay").classList.add("is-open");
 }
 
-function closeTamanQRModal(){
-  document.getElementById('tamanQRModalOverlay').classList.remove('is-open');
+function closeTamanQRModal() {
+  document.getElementById("tamanQRModalOverlay").classList.remove("is-open");
 }
 
-async function copyTamanQRLink(){
-  const input = document.getElementById('tamanQRLink');
-  const btn = document.getElementById('copyTamanQRLink');
+async function copyTamanQRLink() {
+  const input = document.getElementById("tamanQRLink");
+  const btn = document.getElementById("copyTamanQRLink");
   try {
     await navigator.clipboard.writeText(input.value);
-  } catch(_){
+  } catch (_) {
     input.select();
-    document.execCommand('copy');
+    document.execCommand("copy");
   }
-  btn.textContent = 'Tersalin ✓';
-  setTimeout(()=>{ btn.textContent = 'Salin'; }, 1500);
+  btn.textContent = "Tersalin ✓";
+  setTimeout(() => {
+    btn.textContent = "Salin";
+  }, 1500);
 }
 
-function getTamanQRCanvas(){
-  return document.querySelector('#tamanQRCode canvas');
+function getTamanQRCanvas() {
+  return document.querySelector("#tamanQRCode canvas");
 }
 
 /* Unduh PNG: QR + margin putih + judul di bawahnya (siap tempel). */
-function downloadTamanQR(){
+function downloadTamanQR() {
   const qr = getTamanQRCanvas();
   if (!qr) return;
-  const pad = 60, textH = 130, size = qr.width;
-  const c = document.createElement('canvas');
+  const pad = 60,
+    textH = 130,
+    size = qr.width;
+  const c = document.createElement("canvas");
   c.width = size + pad * 2;
   c.height = size + pad * 2 + textH;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#ffffff';
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, c.width, c.height);
   ctx.drawImage(qr, pad, pad, size, size);
-  ctx.fillStyle = '#1d3a24';
-  ctx.textAlign = 'center';
-  ctx.font = 'bold 46px Inter, sans-serif';
-  ctx.fillText((tamanSambutan.title || 'Taman Kelas').slice(0, 32), c.width / 2, size + pad + 70);
-  ctx.fillStyle = '#555555';
-  ctx.font = '28px Inter, sans-serif';
-  ctx.fillText('Scan untuk mengenal taman kelas kami 🌿', c.width / 2, size + pad + 120);
+  ctx.fillStyle = "#1d3a24";
+  ctx.textAlign = "center";
+  ctx.font = "bold 46px Inter, sans-serif";
+  ctx.fillText(
+    (tamanSambutan.title || "Taman Kelas").slice(0, 32),
+    c.width / 2,
+    size + pad + 70,
+  );
+  ctx.fillStyle = "#555555";
+  ctx.font = "28px Inter, sans-serif";
+  ctx.fillText(
+    "Scan untuk mengenal taman kelas kami 🌿",
+    c.width / 2,
+    size + pad + 120,
+  );
 
-  const a = document.createElement('a');
-  a.href = c.toDataURL('image/png');
-  a.download = 'qr-menu-taman.png';
+  const a = document.createElement("a");
+  a.href = c.toDataURL("image/png");
+  a.download = "qr-menu-taman.png";
   a.click();
 }
 
 /* Cetak poster A4 berisi judul, QR besar, dan petunjuk scan. */
-function printTamanQR(){
+function printTamanQR() {
   const qr = getTamanQRCanvas();
   if (!qr) return;
-  const dataURL = qr.toDataURL('image/png');
-  const title = escapeHTML(tamanSambutan.title || 'Selamat Datang di Taman Kelas');
-  const caption = escapeHTML(tamanSambutan.caption || '');
-  const logo = new URL('assets/images/logo.png', location.href).href;
-  const win = window.open('', '_blank', 'width=620,height=820');
-  if (!win){ alert('Popup diblokir browser. Izinkan popup untuk mencetak poster QR.'); return; }
-  win.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Poster QR Menu Taman</title>
+  const dataURL = qr.toDataURL("image/png");
+  const title = escapeHTML(
+    tamanSambutan.title || "Selamat Datang di Taman Kelas",
+  );
+  const caption = escapeHTML(tamanSambutan.caption || "");
+  const logo = new URL("assets/images/logo.png", location.href).href;
+  const win = window.open("", "_blank", "width=620,height=820");
+  if (!win) {
+    alert("Popup diblokir browser. Izinkan popup untuk mencetak poster QR.");
+    return;
+  }
+  win.document
+    .write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Poster QR Menu Taman</title>
     <style>
       @page{ size:A4; margin:14mm; }
       *{ box-sizing:border-box; }
@@ -790,7 +981,7 @@ function printTamanQR(){
         <img class="logo" src="${logo}" alt="" onerror="this.style.display='none'">
         <div class="eyebrow">🌱 Taman Kelas · XI PPLG A</div>
         <h1>${title}</h1>
-        ${caption ? `<p class="caption">${caption}</p>` : ''}
+        ${caption ? `<p class="caption">${caption}</p>` : ""}
         <img class="qr" src="${dataURL}" alt="QR Menu Taman">
         <p class="scan">📱 Scan untuk mengenal taman kami</p>
         <p class="hint">Arahkan kamera HP ke QR Code di atas</p>
@@ -802,122 +993,165 @@ function printTamanQR(){
 
 /* Jika website dibuka dengan ?menu=<nama> (mis. hasil scan QR Menu Taman),
    langsung pindah ke menu tersebut. Khusus taman, Daftar Tanaman dibuka. */
-function handleMenuDeepLink(){
-  const menu = new URLSearchParams(location.search).get('menu');
-  if (!menu || !document.getElementById('view-' + menu)) return;
+function handleMenuDeepLink() {
+  const menu = new URLSearchParams(location.search).get("menu");
+  if (!menu || !document.getElementById("view-" + menu)) return;
   setActiveView(menu);
-  if (menu === 'taman'){
-    const acc = document.getElementById('accPlants');
-    if (acc){
-      acc.classList.add('is-open');
-      const head = acc.querySelector(':scope > .acc__head');
-      if (head) head.setAttribute('aria-expanded', 'true');
+  if (menu === "taman") {
+    const acc = document.getElementById("accPlants");
+    if (acc) {
+      acc.classList.add("is-open");
+      const head = acc.querySelector(":scope > .acc__head");
+      if (head) head.setAttribute("aria-expanded", "true");
     }
   }
   window.scrollTo({ top: 0 });
 }
 
 /* ---------- Kegiatan "Selasa Asri" ---------- */
-function subscribeTamanKegiatan(){
-  onSnapshot(colTamanKegiatan, (snap)=>{
-    selasaAsriList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
-    renderSelasaAsriList();
-    updateTamanHeroStats();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat kegiatan Selasa Asri dari database. Cek koneksi internet.');
-  });
+function subscribeTamanKegiatan() {
+  onSnapshot(
+    colTamanKegiatan,
+    (snap) => {
+      selasaAsriList = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort(
+          (a, b) =>
+            (b.date || "").localeCompare(a.date || "") ||
+            (b.createdAt || 0) - (a.createdAt || 0),
+        );
+      renderSelasaAsriList();
+      updateTamanHeroStats();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat kegiatan Selasa Asri dari database. Cek koneksi internet.",
+      );
+    },
+  );
 }
 
-function renderSelasaAsriList(){
-  const list = document.getElementById('selasaAsriList');
+function renderSelasaAsriList() {
+  const list = document.getElementById("selasaAsriList");
   if (!list) return;
-  if (!selasaAsriList.length){
+  if (!selasaAsriList.length) {
     list.innerHTML = `<p class="empty-note">Belum ada dokumentasi kegiatan Selasa Asri.</p>`;
     return;
   }
-  list.innerHTML = selasaAsriList.map(k => activityCardHTML(k, 'kegiatan')).join('');
-  bindActivityCardButtons('kegiatan', selasaAsriList, 'tamanKegiatan');
+  list.innerHTML = selasaAsriList
+    .map((k) => activityCardHTML(k, "kegiatan"))
+    .join("");
+  bindActivityCardButtons("kegiatan", selasaAsriList, "tamanKegiatan");
 }
 
 /* ---------- Piket Harian ---------- */
-function subscribeTamanPiket(){
-  onSnapshot(colTamanPiket, (snap)=>{
-    piketHarianList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-      .sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
-    renderPiketHarianList();
-    updateTamanHeroStats();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat data piket harian dari database. Cek koneksi internet.');
-  });
+function subscribeTamanPiket() {
+  onSnapshot(
+    colTamanPiket,
+    (snap) => {
+      piketHarianList = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort(
+          (a, b) =>
+            (b.date || "").localeCompare(a.date || "") ||
+            (b.createdAt || 0) - (a.createdAt || 0),
+        );
+      renderPiketHarianList();
+      updateTamanHeroStats();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat data piket harian dari database. Cek koneksi internet.",
+      );
+    },
+  );
 }
 
-function renderPiketHarianList(){
-  const list = document.getElementById('piketHarianList');
+function renderPiketHarianList() {
+  const list = document.getElementById("piketHarianList");
   if (!list) return;
-  if (!piketHarianList.length){
+  if (!piketHarianList.length) {
     list.innerHTML = `<p class="empty-note">Belum ada catatan piket harian.</p>`;
     return;
   }
-  list.innerHTML = piketHarianList.map(k => activityCardHTML(k, 'piket')).join('');
-  bindActivityCardButtons('piket', piketHarianList, 'tamanPiket');
+  list.innerHTML = piketHarianList
+    .map((k) => activityCardHTML(k, "piket"))
+    .join("");
+  bindActivityCardButtons("piket", piketHarianList, "tamanPiket");
 }
 
 /* Kartu aktivitas generik dipakai untuk Selasa Asri & Piket Harian. */
-function activityCardHTML(item, kind){
+function activityCardHTML(item, kind) {
   const photos = getPhotos(item);
-  const dateLabel = item.date ? item.date.split('-').reverse().join('-') : '-';
-  const title = kind === 'kegiatan' ? (item.title || 'Kegiatan Selasa Asri') : 'Piket Harian';
+  const dateLabel = item.date ? item.date.split("-").reverse().join("-") : "-";
+  const title =
+    kind === "kegiatan" ? item.title || "Kegiatan Selasa Asri" : "Piket Harian";
 
-  const photosHTML = photos.length ? `
+  const photosHTML = photos.length
+    ? `
     <div class="activity-card__photos">
-      ${photos.slice(0, 6).map((src, idx) => `
+      ${photos
+        .slice(0, 6)
+        .map(
+          (src, idx) => `
         <button type="button" class="activity-card__photo" data-idx="${idx}" title="Lihat foto">
           <img src="${src}" alt="Foto ${escapeHTML(title)}" loading="lazy">
-          ${idx === 5 && photos.length > 6 ? `<span class="activity-card__photo-count">+${photos.length - 6}</span>` : ''}
-        </button>`).join('')}
-    </div>` : '';
+          ${idx === 5 && photos.length > 6 ? `<span class="activity-card__photo-count">+${photos.length - 6}</span>` : ""}
+        </button>`,
+        )
+        .join("")}
+    </div>`
+    : "";
 
   const actions = isAdmin
     ? `<div class="activity-card__actions"><button class="btn btn--sm" data-action="delete-activity" data-id="${item.id}">Hapus</button></div>`
-    : '';
+    : "";
 
   return `
     <div class="activity-card" data-item-id="${item.id}">
       <div class="activity-card__head">
         <span class="activity-card__date">${dateLabel}</span>
-        ${item.petugas ? `<span class="activity-card__petugas">${escapeHTML(item.petugas)}</span>` : ''}
+        ${item.petugas ? `<span class="activity-card__petugas">${escapeHTML(item.petugas)}</span>` : ""}
       </div>
       <div class="activity-card__title">${escapeHTML(title)}</div>
-      ${item.desc ? `<div class="activity-card__desc">${escapeHTML(item.desc)}</div>` : ''}
+      ${item.desc ? `<div class="activity-card__desc">${escapeHTML(item.desc)}</div>` : ""}
       ${photosHTML}
       ${actions}
     </div>`;
 }
 
-function bindActivityCardButtons(kind, list, collectionName){
-  const containerId = kind === 'kegiatan' ? 'selasaAsriList' : 'piketHarianList';
+function bindActivityCardButtons(kind, list, collectionName) {
+  const containerId =
+    kind === "kegiatan" ? "selasaAsriList" : "piketHarianList";
   const container = document.getElementById(containerId);
   if (!container) return;
-  container.querySelectorAll('.activity-card').forEach(card=>{
+  container.querySelectorAll(".activity-card").forEach((card) => {
     const id = card.dataset.itemId;
-    const item = list.find(x => x.id === id);
+    const item = list.find((x) => x.id === id);
     if (!item) return;
     const photos = getPhotos(item);
-    card.querySelectorAll('.activity-card__photo').forEach(btn=>{
-      btn.onclick = () => openPhotoLightbox(photos, Number(btn.dataset.idx), item.title || 'Dokumentasi', item.desc);
+    card.querySelectorAll(".activity-card__photo").forEach((btn) => {
+      btn.onclick = () =>
+        openPhotoLightbox(
+          photos,
+          Number(btn.dataset.idx),
+          item.title || "Dokumentasi",
+          item.desc,
+        );
     });
     const delBtn = card.querySelector('[data-action="delete-activity"]');
-    if (delBtn){
+    if (delBtn) {
       delBtn.onclick = async () => {
-        if (!confirm('Hapus dokumentasi ini?')) return;
+        if (!confirm("Hapus dokumentasi ini?")) return;
         try {
           await deleteDoc(doc(db, collectionName, id));
-        } catch(err){
+        } catch (err) {
           console.error(err);
-          showDbError('Gagal menghapus data dari database. Cek koneksi internet.');
+          showDbError(
+            "Gagal menghapus data dari database. Cek koneksi internet.",
+          );
         }
       };
     }
@@ -927,111 +1161,165 @@ function bindActivityCardButtons(kind, list, collectionName){
 /* ---------- Modal Tambah Kegiatan Selasa Asri ---------- */
 let newKegiatanPhotos = [];
 
-function openKegiatanModal(){
-  document.getElementById('kegiatanDate').value = todayISO();
-  document.getElementById('kegiatanModalOverlay').classList.add('is-open');
+function openKegiatanModal() {
+  document.getElementById("kegiatanDate").value = todayISO();
+  document.getElementById("kegiatanModalOverlay").classList.add("is-open");
 }
-function closeKegiatanModal(){
-  document.getElementById('kegiatanModalOverlay').classList.remove('is-open');
-  document.getElementById('kegiatanForm').reset();
+function closeKegiatanModal() {
+  document.getElementById("kegiatanModalOverlay").classList.remove("is-open");
+  document.getElementById("kegiatanForm").reset();
   newKegiatanPhotos = [];
-  document.getElementById('kegiatanPhotoPreviewWrap').innerHTML = '';
-  document.getElementById('kegiatanPhotoPreviewWrap').style.display = 'none';
+  document.getElementById("kegiatanPhotoPreviewWrap").innerHTML = "";
+  document.getElementById("kegiatanPhotoPreviewWrap").style.display = "none";
 }
-function renderKegiatanPhotoGrid(){
-  renderPhotoGrid(document.getElementById('kegiatanPhotoPreviewWrap'), newKegiatanPhotos, (idx)=>{
-    newKegiatanPhotos.splice(idx, 1);
-    renderKegiatanPhotoGrid();
-  });
+function renderKegiatanPhotoGrid() {
+  renderPhotoGrid(
+    document.getElementById("kegiatanPhotoPreviewWrap"),
+    newKegiatanPhotos,
+    (idx) => {
+      newKegiatanPhotos.splice(idx, 1);
+      renderKegiatanPhotoGrid();
+    },
+  );
 }
-async function handleKegiatanPhotoChange(e){
+async function handleKegiatanPhotoChange(e) {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
-  for (const file of files){
-    try { newKegiatanPhotos.push(await compressImageFile(file)); }
-    catch(err){ console.error(err); alert('Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.'); }
+  for (const file of files) {
+    try {
+      newKegiatanPhotos.push(await compressImageFile(file));
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.",
+      );
+    }
   }
-  e.target.value = '';
+  e.target.value = "";
   renderKegiatanPhotoGrid();
 }
-function handleKegiatanFormSubmit(e){
+function handleKegiatanFormSubmit(e) {
   e.preventDefault();
-  const date = document.getElementById('kegiatanDate').value;
-  const petugas = document.getElementById('kegiatanPetugas').value.trim();
-  const title = document.getElementById('kegiatanTitle').value.trim();
-  const desc = document.getElementById('kegiatanDesc').value.trim();
+  const date = document.getElementById("kegiatanDate").value;
+  const petugas = document.getElementById("kegiatanPetugas").value.trim();
+  const title = document.getElementById("kegiatanTitle").value.trim();
+  const desc = document.getElementById("kegiatanDesc").value.trim();
   if (!date || !title) return;
 
-  const submitBtn = document.querySelector('#kegiatanForm button[type="submit"]');
+  const submitBtn = document.querySelector(
+    '#kegiatanForm button[type="submit"]',
+  );
   submitBtn.disabled = true;
-  addDoc(colTamanKegiatan, { date, petugas, title, desc, photos: newKegiatanPhotos, createdAt: Date.now() })
-    .then(()=>{ closeKegiatanModal(); })
-    .catch((err)=>{
-      console.error(err);
-      showDbError('Gagal menyimpan kegiatan Selasa Asri ke database. Cek koneksi internet.');
+  addDoc(colTamanKegiatan, {
+    date,
+    petugas,
+    title,
+    desc,
+    photos: newKegiatanPhotos,
+    createdAt: Date.now(),
+  })
+    .then(() => {
+      closeKegiatanModal();
     })
-    .finally(()=>{ submitBtn.disabled = false; });
+    .catch((err) => {
+      console.error(err);
+      showDbError(
+        "Gagal menyimpan kegiatan Selasa Asri ke database. Cek koneksi internet.",
+      );
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+    });
 }
 
 /* ---------- Modal Tambah Piket Harian ---------- */
 let newPiketPhotos = [];
 
-function openPiketModal(){
-  document.getElementById('piketDate').value = todayISO();
-  document.getElementById('piketModalOverlay').classList.add('is-open');
+function openPiketModal() {
+  document.getElementById("piketDate").value = todayISO();
+  document.getElementById("piketModalOverlay").classList.add("is-open");
 }
-function closePiketModal(){
-  document.getElementById('piketModalOverlay').classList.remove('is-open');
-  document.getElementById('piketForm').reset();
+function closePiketModal() {
+  document.getElementById("piketModalOverlay").classList.remove("is-open");
+  document.getElementById("piketForm").reset();
   newPiketPhotos = [];
-  document.getElementById('piketPhotoPreviewWrap').innerHTML = '';
-  document.getElementById('piketPhotoPreviewWrap').style.display = 'none';
+  document.getElementById("piketPhotoPreviewWrap").innerHTML = "";
+  document.getElementById("piketPhotoPreviewWrap").style.display = "none";
 }
-function renderPiketPhotoGrid(){
-  renderPhotoGrid(document.getElementById('piketPhotoPreviewWrap'), newPiketPhotos, (idx)=>{
-    newPiketPhotos.splice(idx, 1);
-    renderPiketPhotoGrid();
-  });
+function renderPiketPhotoGrid() {
+  renderPhotoGrid(
+    document.getElementById("piketPhotoPreviewWrap"),
+    newPiketPhotos,
+    (idx) => {
+      newPiketPhotos.splice(idx, 1);
+      renderPiketPhotoGrid();
+    },
+  );
 }
-async function handlePiketPhotoChange(e){
+async function handlePiketPhotoChange(e) {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
-  for (const file of files){
-    try { newPiketPhotos.push(await compressImageFile(file)); }
-    catch(err){ console.error(err); alert('Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.'); }
+  for (const file of files) {
+    try {
+      newPiketPhotos.push(await compressImageFile(file));
+    } catch (err) {
+      console.error(err);
+      alert(
+        "Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.",
+      );
+    }
   }
-  e.target.value = '';
+  e.target.value = "";
   renderPiketPhotoGrid();
 }
-function handlePiketFormSubmit(e){
+function handlePiketFormSubmit(e) {
   e.preventDefault();
-  const date = document.getElementById('piketDate').value;
-  const petugas = document.getElementById('piketPetugas').value.trim();
-  const desc = document.getElementById('piketDesc').value.trim();
+  const date = document.getElementById("piketDate").value;
+  const petugas = document.getElementById("piketPetugas").value.trim();
+  const desc = document.getElementById("piketDesc").value.trim();
   if (!date || !petugas) return;
 
   const submitBtn = document.querySelector('#piketForm button[type="submit"]');
   submitBtn.disabled = true;
-  addDoc(colTamanPiket, { date, petugas, desc, photos: newPiketPhotos, createdAt: Date.now() })
-    .then(()=>{ closePiketModal(); })
-    .catch((err)=>{
-      console.error(err);
-      showDbError('Gagal menyimpan piket harian ke database. Cek koneksi internet.');
+  addDoc(colTamanPiket, {
+    date,
+    petugas,
+    desc,
+    photos: newPiketPhotos,
+    createdAt: Date.now(),
+  })
+    .then(() => {
+      closePiketModal();
     })
-    .finally(()=>{ submitBtn.disabled = false; });
+    .catch((err) => {
+      console.error(err);
+      showDbError(
+        "Gagal menyimpan piket harian ke database. Cek koneksi internet.",
+      );
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+    });
 }
 
-function todayISO(){
+function todayISO() {
   const d = new Date();
-  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
 /* ---------------------------------------------------------------------- */
 /* 6. UTIL                                                                 */
 /* ---------------------------------------------------------------------- */
-function pad(n){ return n.toString().padStart(2,'0'); }
-function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
-function nowMinutes(d){ return d.getHours()*60 + d.getMinutes(); }
+function pad(n) {
+  return n.toString().padStart(2, "0");
+}
+function timeToMinutes(t) {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+function nowMinutes(d) {
+  return d.getHours() * 60 + d.getMinutes();
+}
 
 /* Kompres & resize foto di sisi browser sebelum disimpan sebagai data URL
    di Firestore (supaya ukuran dokumen tetap kecil, tanpa perlu setup
@@ -1043,28 +1331,35 @@ function nowMinutes(d){ return d.getHours()*60 + d.getMinutes(); }
    Firestore dan gagal tersimpan tanpa kelihatan jelas ke user. */
 const IMAGE_TARGET_BYTES = 200000; // ~200KB per foto (base64)
 
-function compressImageFile(file, maxDim = 700){
-  return new Promise((resolve, reject)=>{
+function compressImageFile(file, maxDim = 700) {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = (e)=>{
+    reader.onload = (e) => {
       const img = new Image();
-      img.onload = ()=>{
+      img.onload = () => {
         let { width, height } = img;
 
-        const renderAt = (dim)=>{
-          let w = width, h = height;
-          if (w > dim || h > dim){
-            if (w > h){ h = Math.round(h * dim / w); w = dim; }
-            else { w = Math.round(w * dim / h); h = dim; }
+        const renderAt = (dim) => {
+          let w = width,
+            h = height;
+          if (w > dim || h > dim) {
+            if (w > h) {
+              h = Math.round((h * dim) / w);
+              w = dim;
+            } else {
+              w = Math.round((w * dim) / h);
+              h = dim;
+            }
           }
-          const canvas = document.createElement('canvas');
-          canvas.width = w; canvas.height = h;
-          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          const canvas = document.createElement("canvas");
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
           let quality = 0.75;
-          let out = canvas.toDataURL('image/jpeg', quality);
-          while (out.length > IMAGE_TARGET_BYTES && quality > 0.35){
+          let out = canvas.toDataURL("image/jpeg", quality);
+          while (out.length > IMAGE_TARGET_BYTES && quality > 0.35) {
             quality -= 0.1;
-            out = canvas.toDataURL('image/jpeg', quality);
+            out = canvas.toDataURL("image/jpeg", quality);
           }
           return out;
         };
@@ -1074,42 +1369,58 @@ function compressImageFile(file, maxDim = 700){
         // (bukan cuma kualitasnya) supaya hasil akhirnya tetap ringkas.
         let out = renderAt(maxDim);
         let dim = maxDim;
-        while (out.length > IMAGE_TARGET_BYTES && dim > 300){
+        while (out.length > IMAGE_TARGET_BYTES && dim > 300) {
           dim = Math.round(dim * 0.75);
           out = renderAt(dim);
         }
         resolve(out);
       };
-      img.onerror = () => reject(new Error('Gagal membaca gambar.'));
+      img.onerror = () => reject(new Error("Gagal membaca gambar."));
       img.src = e.target.result;
     };
-    reader.onerror = () => reject(new Error('Gagal membaca file.'));
+    reader.onerror = () => reject(new Error("Gagal membaca file."));
     reader.readAsDataURL(file);
   });
 }
 
-function buildDayRows(dayKey, scheduleBlock){
+function buildDayRows(dayKey, scheduleBlock) {
   const slots = TIME_SLOTS[dayKey];
   const dayData = scheduleBlock[dayKey] || [];
   if (!dayData.length) return [];
-  const maxJam = Math.max(...dayData.map(b=>b.jamEnd));
+  const maxJam = Math.max(...dayData.map((b) => b.jamEnd));
   const rows = [];
   let i = 0;
-  while (i < slots.length){
+  while (i < slots.length) {
     const slot = slots[i];
-    if (slot.type !== 'jam'){
-      rows.push({ type:slot.type, label:slot.label, start:slot.start, end:slot.end });
-      i++; continue;
+    if (slot.type !== "jam") {
+      rows.push({
+        type: slot.type,
+        label: slot.label,
+        start: slot.start,
+        end: slot.end,
+      });
+      i++;
+      continue;
     }
     if (slot.jam > maxJam) break; // sisa waktu tidak terjadwal untuk blok ini
-    const block = dayData.find(b => b.jamStart === slot.jam);
-    if (block){
-      const endIdx = slots.findIndex(s => s.type==='jam' && s.jam===block.jamEnd);
+    const block = dayData.find((b) => b.jamStart === slot.jam);
+    if (block) {
+      const endIdx = slots.findIndex(
+        (s) => s.type === "jam" && s.jam === block.jamEnd,
+      );
       const endSlot = slots[endIdx];
       rows.push({
-        type:'subject', subject:block.subject, teacher:block.teacher, room:block.room,
-        category:block.category, start:slot.start, end:endSlot.end,
-        jamLabel: block.jamStart===block.jamEnd ? `Jam ${block.jamStart}` : `Jam ${block.jamStart}–${block.jamEnd}`
+        type: "subject",
+        subject: block.subject,
+        teacher: block.teacher,
+        room: block.room,
+        category: block.category,
+        start: slot.start,
+        end: endSlot.end,
+        jamLabel:
+          block.jamStart === block.jamEnd
+            ? `Jam ${block.jamStart}`
+            : `Jam ${block.jamStart}–${block.jamEnd}`,
       });
       i = endIdx + 1;
     } else {
@@ -1119,67 +1430,72 @@ function buildDayRows(dayKey, scheduleBlock){
   return rows;
 }
 
-function getCurrentDayKey(d){ return JS_DAY_TO_KEY[d.getDay()] || null; }
+function getCurrentDayKey(d) {
+  return JS_DAY_TO_KEY[d.getDay()] || null;
+}
 
-function findCurrentSubject(blok){
+function findCurrentSubject(blok) {
   const now = new Date();
   const dayKey = getCurrentDayKey(now);
-  if (!dayKey) return { state:'libur' };
+  if (!dayKey) return { state: "libur" };
   const rows = buildDayRows(dayKey, SCHEDULES[blok]);
   const mins = nowMinutes(now);
-  for (const row of rows){
-    const s = timeToMinutes(row.start), e = timeToMinutes(row.end);
-    if (mins >= s && mins < e){
-      if (row.type === 'subject') return { state:'subject', row };
-      return { state: row.type === 'break' ? 'istirahat' : 'khusus', row };
+  for (const row of rows) {
+    const s = timeToMinutes(row.start),
+      e = timeToMinutes(row.end);
+    if (mins >= s && mins < e) {
+      if (row.type === "subject") return { state: "subject", row };
+      return { state: row.type === "break" ? "istirahat" : "khusus", row };
     }
   }
-  return { state:'kosong' };
+  return { state: "kosong" };
 }
 
 /* ---------------------------------------------------------------------- */
 /* 7. CLOCK + DASHBOARD STATUS                                             */
 /* ---------------------------------------------------------------------- */
-function updateGreeting(){
+function updateGreeting() {
   const h = new Date().getHours();
-  let g = 'Selamat malam,';
-  if (h < 11) g = 'Selamat pagi,';
-  else if (h < 15) g = 'Selamat siang,';
-  else if (h < 18) g = 'Selamat sore,';
-  document.getElementById('greetText').textContent = g;
+  let g = "Selamat malam,";
+  if (h < 11) g = "Selamat pagi,";
+  else if (h < 15) g = "Selamat siang,";
+  else if (h < 18) g = "Selamat sore,";
+  document.getElementById("greetText").textContent = g;
 }
 
-function updateClock(){
+function updateClock() {
   const now = new Date();
-  document.getElementById('clockTime').textContent =
+  document.getElementById("clockTime").textContent =
     `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  document.getElementById('clockDate').textContent =
-    now.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  document.getElementById("clockDate").textContent = now.toLocaleDateString(
+    "id-ID",
+    { weekday: "long", day: "numeric", month: "long", year: "numeric" },
+  );
 }
 
-function updateStatusCard(){
+function updateStatusCard() {
   const info = findCurrentSubject(currentBlok);
-  const body = document.getElementById('statusBody');
-  const label = document.querySelector('#statusCard .status-card__label');
-  if (info.state === 'subject'){
+  const body = document.getElementById("statusBody");
+  const label = document.querySelector("#statusCard .status-card__label");
+  if (info.state === "subject") {
     label.innerHTML = '<span class="ping"></span> sedang berlangsung';
     body.innerHTML = `
       <span class="status-card__subject">${info.row.subject}</span>
       <span class="status-card__meta">${info.row.teacher} · ${info.row.room}</span>
       <span class="status-card__time">${info.row.jamLabel} · ${info.row.start}–${info.row.end} WIB</span>`;
-  } else if (info.state === 'istirahat'){
+  } else if (info.state === "istirahat") {
     label.innerHTML = '<span class="ping"></span> jeda';
     body.innerHTML = `<span class="status-card__subject">${info.row.label}</span>
       <span class="status-card__time">${info.row.start}–${info.row.end} WIB</span>`;
-  } else if (info.state === 'khusus'){
+  } else if (info.state === "khusus") {
     label.innerHTML = '<span class="ping"></span> agenda rutin';
     body.innerHTML = `<span class="status-card__subject">${info.row.label}</span>
       <span class="status-card__time">${info.row.start}–${info.row.end} WIB</span>`;
-  } else if (info.state === 'libur'){
-    label.innerHTML = 'akhir pekan';
+  } else if (info.state === "libur") {
+    label.innerHTML = "akhir pekan";
     body.innerHTML = `<span class="status-card__subject">Tidak ada jadwal — selamat beristirahat 👋</span>`;
   } else {
-    label.innerHTML = 'di luar jam sekolah';
+    label.innerHTML = "di luar jam sekolah";
     body.innerHTML = `<span class="status-card__subject">Belum / sudah selesai KBM hari ini</span>`;
   }
 }
@@ -1187,97 +1503,135 @@ function updateStatusCard(){
 /* ---------------------------------------------------------------------- */
 /* 8. NAVIGASI                                                             */
 /* ---------------------------------------------------------------------- */
-function setActiveView(target){
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('is-active'));
-  document.getElementById('view-' + target).classList.add('is-active');
-  document.querySelectorAll('.navlink').forEach(n => n.classList.toggle('is-active', n.dataset.target === target));
-  document.getElementById('mainNav').classList.remove('is-open');
+function setActiveView(target) {
+  document
+    .querySelectorAll(".view")
+    .forEach((v) => v.classList.remove("is-active"));
+  document.getElementById("view-" + target).classList.add("is-active");
+  document
+    .querySelectorAll(".navlink")
+    .forEach((n) =>
+      n.classList.toggle("is-active", n.dataset.target === target),
+    );
+  document.getElementById("mainNav").classList.remove("is-open");
 }
 
 /* ---------------------------------------------------------------------- */
 /* 9. TUGAS / KANBAN                                                       */
 /* ---------------------------------------------------------------------- */
-function daysUntil(iso){
-  const today = new Date(); today.setHours(0,0,0,0);
-  const d = new Date(iso + 'T00:00:00');
+function daysUntil(iso) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const d = new Date(iso + "T00:00:00");
   return Math.round((d - today) / 86400000);
 }
 
-function renderSubjectSelects(){
+function renderSubjectSelects() {
   const subjects = getAllSubjects();
-  const filterSel = document.getElementById('filterSubject');
-  const inputSel = document.getElementById('inputSubject');
-  filterSel.innerHTML = '<option value="all">Semua Mapel</option>' +
-    subjects.map(s => `<option value="${s}">${s}</option>`).join('');
-  inputSel.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+  const filterSel = document.getElementById("filterSubject");
+  const inputSel = document.getElementById("inputSubject");
+  filterSel.innerHTML =
+    '<option value="all">Semua Mapel</option>' +
+    subjects.map((s) => `<option value="${s}">${s}</option>`).join("");
+  inputSel.innerHTML = subjects
+    .map((s) => `<option value="${s}">${s}</option>`)
+    .join("");
 }
 
-function renderTasks(){
-  const filterSubject = document.getElementById('filterSubject').value;
-  const sortMode = document.getElementById('sortDeadline').value;
+function renderTasks() {
+  const filterSubject = document.getElementById("filterSubject").value;
+  const sortMode = document.getElementById("sortDeadline").value;
 
-  let filtered = tasks.filter(t => filterSubject === 'all' || t.subject === filterSubject);
-  filtered.sort((a,b) => sortMode === 'deadline-asc'
-    ? a.deadline.localeCompare(b.deadline)
-    : b.deadline.localeCompare(a.deadline));
+  let filtered = tasks.filter(
+    (t) => filterSubject === "all" || t.subject === filterSubject,
+  );
+  filtered.sort((a, b) =>
+    sortMode === "deadline-asc"
+      ? a.deadline.localeCompare(b.deadline)
+      : b.deadline.localeCompare(a.deadline),
+  );
 
-  document.getElementById('filterCount').textContent = `${filtered.length} tugas ditampilkan`;
+  document.getElementById("filterCount").textContent =
+    `${filtered.length} tugas ditampilkan`;
 
-  ['belum','sedang','selesai'].forEach(status=>{
-    const list = document.getElementById('list' + cap(status));
-    const items = filtered.filter(t => t.status === status);
-    document.getElementById('count' + cap(status)).textContent = items.length;
-    list.innerHTML = items.length ? items.map(taskCardHTML).join('') : `<p class="empty-note">Tidak ada tugas.</p>`;
+  ["belum", "sedang", "selesai"].forEach((status) => {
+    const list = document.getElementById("list" + cap(status));
+    const items = filtered.filter((t) => t.status === status);
+    document.getElementById("count" + cap(status)).textContent = items.length;
+    list.innerHTML = items.length
+      ? items.map(taskCardHTML).join("")
+      : `<p class="empty-note">Tidak ada tugas.</p>`;
   });
 
   // stat ringkasan di dashboard
-  document.getElementById('statBelum').textContent = tasks.filter(t=>t.status==='belum').length;
-  document.getElementById('statSedang').textContent = tasks.filter(t=>t.status==='sedang').length;
-  document.getElementById('statSelesai').textContent = tasks.filter(t=>t.status==='selesai').length;
+  document.getElementById("statBelum").textContent = tasks.filter(
+    (t) => t.status === "belum",
+  ).length;
+  document.getElementById("statSedang").textContent = tasks.filter(
+    (t) => t.status === "sedang",
+  ).length;
+  document.getElementById("statSelesai").textContent = tasks.filter(
+    (t) => t.status === "selesai",
+  ).length;
 
   renderUpcomingDeadlines();
   bindTaskActionButtons();
 }
 
-function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function cap(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
-const SUBJECT_BADGE_COLOR = { teori:'badge--teori', kejuruan:'badge--kejuruan', olahraga:'badge--olahraga', khusus:'badge--khusus' };
-function subjectCategory(name){
-  for (const block of [SCHEDULE_UMUM, SCHEDULE_PRODUKTIF]){
-    for (const day of Object.values(block)){
-      const found = day.find(s => s.subject === name);
+const SUBJECT_BADGE_COLOR = {
+  teori: "badge--teori",
+  kejuruan: "badge--kejuruan",
+  olahraga: "badge--olahraga",
+  khusus: "badge--khusus",
+};
+function subjectCategory(name) {
+  for (const block of [SCHEDULE_UMUM, SCHEDULE_PRODUKTIF]) {
+    for (const day of Object.values(block)) {
+      const found = day.find((s) => s.subject === name);
       if (found) return found.category;
     }
   }
-  return 'teori';
+  return "teori";
 }
 
-function taskCardHTML(t){
+function taskCardHTML(t) {
   const dleft = daysUntil(t.deadline);
-  const soon = dleft <= 2 && t.status !== 'selesai';
+  const soon = dleft <= 2 && t.status !== "selesai";
   const cat = subjectCategory(t.subject);
-  const badgeClass = SUBJECT_BADGE_COLOR[cat] || 'badge--teori';
-  const deadlineLabel = t.deadline.split('-').reverse().join('-');
-  const dleftLabel = dleft === 0 ? 'hari ini' : dleft > 0 ? `H-${dleft}` : `terlewat ${Math.abs(dleft)} hari`;
+  const badgeClass = SUBJECT_BADGE_COLOR[cat] || "badge--teori";
+  const deadlineLabel = t.deadline.split("-").reverse().join("-");
+  const dleftLabel =
+    dleft === 0
+      ? "hari ini"
+      : dleft > 0
+        ? `H-${dleft}`
+        : `terlewat ${Math.abs(dleft)} hari`;
 
   const photos = getTaskPhotos(t);
 
-  let actions = '';
-  if (isAdmin){
-    if (t.status === 'belum') actions += `<button class="btn btn--sm" data-action="move" data-id="${t.id}" data-to="sedang">Mulai</button>`;
-    if (t.status === 'sedang') actions += `<button class="btn btn--sm" data-action="move" data-id="${t.id}" data-to="belum">Batalkan</button><button class="btn btn--sm btn--primary" data-action="move" data-id="${t.id}" data-to="selesai">Selesai</button>`;
-    if (t.status === 'selesai') actions += `<button class="btn btn--sm" data-action="move" data-id="${t.id}" data-to="sedang">Buka Lagi</button>`;
+  let actions = "";
+  if (isAdmin) {
+    if (t.status === "belum")
+      actions += `<button class="btn btn--sm" data-action="move" data-id="${t.id}" data-to="sedang">Mulai</button>`;
+    if (t.status === "sedang")
+      actions += `<button class="btn btn--sm" data-action="move" data-id="${t.id}" data-to="belum">Batalkan</button><button class="btn btn--sm btn--primary" data-action="move" data-id="${t.id}" data-to="selesai">Selesai</button>`;
+    if (t.status === "selesai")
+      actions += `<button class="btn btn--sm" data-action="move" data-id="${t.id}" data-to="sedang">Buka Lagi</button>`;
     actions += `<button class="btn btn--sm" data-action="edit" data-id="${t.id}">Edit</button>`;
-    actions += `<button class="btn btn--sm" data-action="photo" data-id="${t.id}">${photos.length ? `Kelola Foto (${photos.length})` : '+ Foto'}</button>`;
+    actions += `<button class="btn btn--sm" data-action="photo" data-id="${t.id}">${photos.length ? `Kelola Foto (${photos.length})` : "+ Foto"}</button>`;
     actions += `<button class="btn btn--sm" data-action="delete" data-id="${t.id}">Hapus</button>`;
   }
 
   const photoThumb = photos.length
     ? `<button type="button" class="task-card__photo" data-action="viewphoto" data-id="${t.id}" title="Lihat foto tugas / catatan materi">
         <img src="${photos[0]}" alt="Foto tugas ${escapeHTML(t.title)}" loading="lazy">
-        ${photos.length > 1 ? `<span class="task-card__photo-count">+${photos.length - 1}</span>` : ''}
+        ${photos.length > 1 ? `<span class="task-card__photo-count">+${photos.length - 1}</span>` : ""}
       </button>`
-    : '';
+    : "";
 
   return `
     <div class="task-card">
@@ -1287,156 +1641,190 @@ function taskCardHTML(t){
       </div>
       <div class="task-card__title">${escapeHTML(t.title)}</div>
       ${photoThumb}
-      ${t.desc ? `<div class="task-card__desc">${escapeHTML(t.desc)}</div>` : ''}
-      <div class="task-card__deadline ${soon ? 'is-soon' : ''}">deadline ${deadlineLabel} · ${dleftLabel}</div>
+      ${t.desc ? `<div class="task-card__desc">${escapeHTML(t.desc)}</div>` : ""}
+      <div class="task-card__deadline ${soon ? "is-soon" : ""}">deadline ${deadlineLabel} · ${dleftLabel}</div>
       <div class="task-card__actions">${actions}</div>
     </div>`;
 }
 
-function escapeHTML(str){
-  const div = document.createElement('div');
+function escapeHTML(str) {
+  const div = document.createElement("div");
   div.textContent = str;
   return div.innerHTML;
 }
 
-function bindTaskActionButtons(){
-  document.querySelectorAll('[data-action="move"]').forEach(btn=>{
+function bindTaskActionButtons() {
+  document.querySelectorAll('[data-action="move"]').forEach((btn) => {
     btn.onclick = async () => {
       const id = btn.dataset.id;
       const to = btn.dataset.to;
       try {
-        await updateDoc(doc(db, 'tasks', id), { status: to });
-      } catch(err){
+        await updateDoc(doc(db, "tasks", id), { status: to });
+      } catch (err) {
         console.error(err);
-        showDbError('Gagal menyimpan perubahan status tugas ke database. Cek koneksi internet.');
+        showDbError(
+          "Gagal menyimpan perubahan status tugas ke database. Cek koneksi internet.",
+        );
       }
     };
   });
-  document.querySelectorAll('[data-action="delete"]').forEach(btn=>{
+  document.querySelectorAll('[data-action="delete"]').forEach((btn) => {
     btn.onclick = async () => {
       const id = btn.dataset.id;
       try {
-        await deleteDoc(doc(db, 'tasks', id));
-      } catch(err){
+        await deleteDoc(doc(db, "tasks", id));
+      } catch (err) {
         console.error(err);
-        showDbError('Gagal menghapus tugas dari database. Cek koneksi internet.');
+        showDbError(
+          "Gagal menghapus tugas dari database. Cek koneksi internet.",
+        );
       }
     };
   });
-  document.querySelectorAll('[data-action="edit"]').forEach(btn=>{
+  document.querySelectorAll('[data-action="edit"]').forEach((btn) => {
     btn.onclick = () => openEditModal(btn.dataset.id);
   });
-  document.querySelectorAll('[data-action="viewphoto"]').forEach(btn=>{
+  document.querySelectorAll('[data-action="viewphoto"]').forEach((btn) => {
     btn.onclick = () => {
-      const t = tasks.find(x => x.id === btn.dataset.id);
+      const t = tasks.find((x) => x.id === btn.dataset.id);
       const photos = getTaskPhotos(t);
       if (photos.length) openPhotoLightbox(photos, 0, t.title, t.desc);
     };
   });
-  document.querySelectorAll('[data-action="photo"]').forEach(btn=>{
+  document.querySelectorAll('[data-action="photo"]').forEach((btn) => {
     btn.onclick = () => openTaskPhotoModal(btn.dataset.id);
   });
 }
 
-function renderUpcomingDeadlines(){
-  const el = document.getElementById('upcomingDeadlines');
+function renderUpcomingDeadlines() {
+  const el = document.getElementById("upcomingDeadlines");
   const upcoming = tasks
-    .filter(t => t.status !== 'selesai')
-    .sort((a,b) => a.deadline.localeCompare(b.deadline))
+    .filter((t) => t.status !== "selesai")
+    .sort((a, b) => a.deadline.localeCompare(b.deadline))
     .slice(0, 4);
-  el.innerHTML = upcoming.length ? upcoming.map(t => `
+  el.innerHTML = upcoming.length
+    ? upcoming
+        .map(
+          (t) => `
     <div class="upcoming-item">
       <span class="upcoming-item__title">${escapeHTML(t.title)}</span>
-      <span class="upcoming-item__meta">${t.deadline.split('-').reverse().join('-')}</span>
-    </div>`).join('') : `<p class="empty-note">Tidak ada tugas mendatang.</p>`;
+      <span class="upcoming-item__meta">${t.deadline.split("-").reverse().join("-")}</span>
+    </div>`,
+        )
+        .join("")
+    : `<p class="empty-note">Tidak ada tugas mendatang.</p>`;
 }
 
 /* ---------------------------------------------------------------------- */
 /* 10. MODAL TAMBAH TUGAS                                                  */
 /* ---------------------------------------------------------------------- */
-let newTaskPhotos = [];       // foto-foto yang sedang dipilih di form "Tugas Baru"/"Edit Tugas"
-let editingTaskId = null;     // null = mode tambah tugas baru, terisi id = mode edit tugas
+let newTaskPhotos = []; // foto-foto yang sedang dipilih di form "Tugas Baru"/"Edit Tugas"
+let editingTaskId = null; // null = mode tambah tugas baru, terisi id = mode edit tugas
 
-function openModal(){ document.getElementById('taskModalOverlay').classList.add('is-open'); }
+function openModal() {
+  document.getElementById("taskModalOverlay").classList.add("is-open");
+}
 
-function openEditModal(id){
-  const t = tasks.find(x => x.id === id);
+function openEditModal(id) {
+  const t = tasks.find((x) => x.id === id);
   if (!t) return;
   editingTaskId = id;
 
-  document.getElementById('inputSubject').value = t.subject;
-  document.getElementById('inputTitle').value = t.title;
-  document.getElementById('inputDeadline').value = t.deadline;
-  document.getElementById('inputType').value = t.type;
-  document.getElementById('inputDesc').value = t.desc || '';
+  document.getElementById("inputSubject").value = t.subject;
+  document.getElementById("inputTitle").value = t.title;
+  document.getElementById("inputDeadline").value = t.deadline;
+  document.getElementById("inputType").value = t.type;
+  document.getElementById("inputDesc").value = t.desc || "";
 
   newTaskPhotos = getTaskPhotos(t).slice();
   renderInputPhotoGrid();
 
-  document.querySelector('#taskModalOverlay h3').textContent = 'Edit Tugas';
-  document.querySelector('#taskForm button[type="submit"]').textContent = 'Simpan Perubahan';
+  document.querySelector("#taskModalOverlay h3").textContent = "Edit Tugas";
+  document.querySelector('#taskForm button[type="submit"]').textContent =
+    "Simpan Perubahan";
 
   openModal();
 }
 
-function closeModal(){
-  document.getElementById('taskModalOverlay').classList.remove('is-open');
-  document.getElementById('taskForm').reset();
+function closeModal() {
+  document.getElementById("taskModalOverlay").classList.remove("is-open");
+  document.getElementById("taskForm").reset();
   newTaskPhotos = [];
   editingTaskId = null;
-  document.getElementById('inputPhotoPreviewWrap').innerHTML = '';
-  document.getElementById('inputPhotoPreviewWrap').style.display = 'none';
-  document.querySelector('#taskModalOverlay h3').textContent = 'Tugas Baru';
-  document.querySelector('#taskForm button[type="submit"]').textContent = 'Simpan Tugas';
+  document.getElementById("inputPhotoPreviewWrap").innerHTML = "";
+  document.getElementById("inputPhotoPreviewWrap").style.display = "none";
+  document.querySelector("#taskModalOverlay h3").textContent = "Tugas Baru";
+  document.querySelector('#taskForm button[type="submit"]').textContent =
+    "Simpan Tugas";
 }
 
-function renderInputPhotoGrid(){
-  renderPhotoGrid(document.getElementById('inputPhotoPreviewWrap'), newTaskPhotos, (idx)=>{
-    newTaskPhotos.splice(idx, 1);
-    renderInputPhotoGrid();
-  });
+function renderInputPhotoGrid() {
+  renderPhotoGrid(
+    document.getElementById("inputPhotoPreviewWrap"),
+    newTaskPhotos,
+    (idx) => {
+      newTaskPhotos.splice(idx, 1);
+      renderInputPhotoGrid();
+    },
+  );
 }
 
-async function handleInputPhotoChange(e){
+async function handleInputPhotoChange(e) {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
-  for (const file of files){
+  for (const file of files) {
     try {
       const compressed = await compressImageFile(file);
       newTaskPhotos.push(compressed);
-    } catch(err){
+    } catch (err) {
       console.error(err);
-      alert('Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.');
+      alert(
+        "Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.",
+      );
     }
   }
-  e.target.value = ''; // supaya bisa pilih file yang sama lagi nanti kalau perlu
+  e.target.value = ""; // supaya bisa pilih file yang sama lagi nanti kalau perlu
   renderInputPhotoGrid();
 }
 
-function handleTaskFormSubmit(e){
+function handleTaskFormSubmit(e) {
   e.preventDefault();
-  const subject = document.getElementById('inputSubject').value;
-  const title = document.getElementById('inputTitle').value.trim();
-  const deadline = document.getElementById('inputDeadline').value;
-  const type = document.getElementById('inputType').value;
-  const desc = document.getElementById('inputDesc').value.trim();
+  const subject = document.getElementById("inputSubject").value;
+  const title = document.getElementById("inputTitle").value.trim();
+  const deadline = document.getElementById("inputDeadline").value;
+  const type = document.getElementById("inputType").value;
+  const desc = document.getElementById("inputDesc").value.trim();
   if (!title || !deadline) return;
 
-  const data = { subject, title, deadline, type, desc, photos: newTaskPhotos, photoData: null };
+  const data = {
+    subject,
+    title,
+    deadline,
+    type,
+    desc,
+    photos: newTaskPhotos,
+    photoData: null,
+  };
   const submitBtn = document.querySelector('#taskForm button[type="submit"]');
   submitBtn.disabled = true;
 
   const promise = editingTaskId
-    ? updateDoc(doc(db, 'tasks', editingTaskId), data)          // mode edit: status tidak diubah
-    : addDoc(colTasks, { ...data, status: 'belum' });           // mode tambah tugas baru
+    ? updateDoc(doc(db, "tasks", editingTaskId), data) // mode edit: status tidak diubah
+    : addDoc(colTasks, { ...data, status: "belum" }); // mode tambah tugas baru
 
   promise
-    .then(()=>{ closeModal(); })
-    .catch((err)=>{
-      console.error(err);
-      showDbError('Gagal menyimpan tugas ke database. Cek koneksi internet & konfigurasi Firebase.');
+    .then(() => {
+      closeModal();
     })
-    .finally(()=>{ submitBtn.disabled = false; });
+    .catch((err) => {
+      console.error(err);
+      showDbError(
+        "Gagal menyimpan tugas ke database. Cek koneksi internet & konfigurasi Firebase.",
+      );
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+    });
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1445,58 +1833,69 @@ function handleTaskFormSubmit(e){
 let taskPhotoCurrentId = null;
 let taskPhotoWorkingList = []; // daftar foto (lama + baru) yang sedang diedit di modal ini
 
-function openTaskPhotoModal(id){
+function openTaskPhotoModal(id) {
   taskPhotoCurrentId = id;
-  document.getElementById('taskPhotoForm').reset();
+  document.getElementById("taskPhotoForm").reset();
 
-  const t = tasks.find(x => x.id === id);
+  const t = tasks.find((x) => x.id === id);
   taskPhotoWorkingList = getTaskPhotos(t).slice();
   renderTaskPhotoGrid();
 
-  document.getElementById('taskPhotoModalOverlay').classList.add('is-open');
+  document.getElementById("taskPhotoModalOverlay").classList.add("is-open");
 }
 
-function closeTaskPhotoModal(){
-  document.getElementById('taskPhotoModalOverlay').classList.remove('is-open');
+function closeTaskPhotoModal() {
+  document.getElementById("taskPhotoModalOverlay").classList.remove("is-open");
   taskPhotoCurrentId = null;
   taskPhotoWorkingList = [];
 }
 
-function renderTaskPhotoGrid(){
-  renderPhotoGrid(document.getElementById('taskPhotoPreviewWrap'), taskPhotoWorkingList, (idx)=>{
-    taskPhotoWorkingList.splice(idx, 1);
-    renderTaskPhotoGrid();
-  });
+function renderTaskPhotoGrid() {
+  renderPhotoGrid(
+    document.getElementById("taskPhotoPreviewWrap"),
+    taskPhotoWorkingList,
+    (idx) => {
+      taskPhotoWorkingList.splice(idx, 1);
+      renderTaskPhotoGrid();
+    },
+  );
 }
 
-async function handleTaskPhotoFileChange(e){
+async function handleTaskPhotoFileChange(e) {
   const files = Array.from(e.target.files || []);
   if (!files.length) return;
-  for (const file of files){
+  for (const file of files) {
     try {
       const compressed = await compressImageFile(file);
       taskPhotoWorkingList.push(compressed);
-    } catch(err){
+    } catch (err) {
       console.error(err);
-      alert('Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.');
+      alert(
+        "Gagal memproses salah satu foto, foto itu dilewati. Coba pilih foto lain.",
+      );
     }
   }
-  e.target.value = '';
+  e.target.value = "";
   renderTaskPhotoGrid();
 }
 
-async function handleTaskPhotoFormSubmit(e){
+async function handleTaskPhotoFormSubmit(e) {
   e.preventDefault();
   if (!taskPhotoCurrentId) return;
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   try {
-    await updateDoc(doc(db, 'tasks', taskPhotoCurrentId), { photos: taskPhotoWorkingList, photoData: null });
+    await updateDoc(doc(db, "tasks", taskPhotoCurrentId), {
+      photos: taskPhotoWorkingList,
+      photoData: null,
+    });
     closeTaskPhotoModal();
-  } catch(err){
+  } catch (err) {
     console.error(err);
-    showDbError('Gagal menyimpan foto tugas ke database. Cek koneksi internet.');
+    showDbError(
+      "Gagal menyimpan foto tugas ke database. Cek koneksi internet.",
+    );
   } finally {
     submitBtn.disabled = false;
   }
@@ -1505,63 +1904,71 @@ async function handleTaskPhotoFormSubmit(e){
 /* ---------------------------------------------------------------------- */
 /* 10c. LIGHTBOX — LIHAT FOTO TUGAS & CATATAN MATERI                       */
 /* ---------------------------------------------------------------------- */
-let lightboxPhotos = [];  // daftar foto tugas yang sedang dibuka di lightbox
-let lightboxIndex = 0;    // foto ke berapa yang sedang ditampilkan
+let lightboxPhotos = []; // daftar foto tugas yang sedang dibuka di lightbox
+let lightboxIndex = 0; // foto ke berapa yang sedang ditampilkan
 
-function openPhotoLightbox(photos, startIndex, title, desc, isLandscape = false){
+function openPhotoLightbox(
+  photos,
+  startIndex,
+  title,
+  desc,
+  isLandscape = false,
+) {
   lightboxPhotos = photos || [];
   lightboxIndex = startIndex || 0;
-  document.getElementById('photoLightboxTitle').textContent = title || 'Foto Tugas';
-  document.getElementById('photoLightboxDesc').textContent = desc || '';
+  document.getElementById("photoLightboxTitle").textContent =
+    title || "Foto Tugas";
+  document.getElementById("photoLightboxDesc").textContent = desc || "";
 
-  const modalEl = document.querySelector('#photoLightboxOverlay .modal');
-  if (modalEl){
-    modalEl.classList.toggle('modal--landscape', !!isLandscape);
+  const modalEl = document.querySelector("#photoLightboxOverlay .modal");
+  if (modalEl) {
+    modalEl.classList.toggle("modal--landscape", !!isLandscape);
   }
 
   renderLightboxPhoto();
-  document.getElementById('photoLightboxOverlay').classList.add('is-open');
+  document.getElementById("photoLightboxOverlay").classList.add("is-open");
 }
 
-function renderLightboxPhoto(){
+function renderLightboxPhoto() {
   if (!lightboxPhotos.length) return;
   const dataURL = lightboxPhotos[lightboxIndex];
-  const title = document.getElementById('photoLightboxTitle').textContent;
+  const title = document.getElementById("photoLightboxTitle").textContent;
 
-  document.getElementById('photoLightboxImg').src = dataURL;
+  document.getElementById("photoLightboxImg").src = dataURL;
 
-  const downloadBtn = document.getElementById('downloadPhotoBtn');
+  const downloadBtn = document.getElementById("downloadPhotoBtn");
   downloadBtn.href = dataURL;
   downloadBtn.download = photoFileName(title, lightboxIndex);
 
-  const nav = document.getElementById('photoLightboxNav');
-  const counter = document.getElementById('photoLightboxCounter');
-  if (lightboxPhotos.length > 1){
-    nav.style.display = 'flex';
+  const nav = document.getElementById("photoLightboxNav");
+  const counter = document.getElementById("photoLightboxCounter");
+  if (lightboxPhotos.length > 1) {
+    nav.style.display = "flex";
     counter.textContent = `${lightboxIndex + 1} / ${lightboxPhotos.length}`;
   } else {
-    nav.style.display = 'none';
+    nav.style.display = "none";
   }
 }
 
-function showPrevPhoto(){
+function showPrevPhoto() {
   if (lightboxPhotos.length < 2) return;
-  lightboxIndex = (lightboxIndex - 1 + lightboxPhotos.length) % lightboxPhotos.length;
+  lightboxIndex =
+    (lightboxIndex - 1 + lightboxPhotos.length) % lightboxPhotos.length;
   renderLightboxPhoto();
 }
 
-function showNextPhoto(){
+function showNextPhoto() {
   if (lightboxPhotos.length < 2) return;
   lightboxIndex = (lightboxIndex + 1) % lightboxPhotos.length;
   renderLightboxPhoto();
 }
 
-function closePhotoLightbox(){
-  document.getElementById('photoLightboxOverlay').classList.remove('is-open');
-  document.getElementById('photoLightboxImg').src = '';
-  document.getElementById('downloadPhotoBtn').href = '#';
-  const modalEl = document.querySelector('#photoLightboxOverlay .modal');
-  if (modalEl) modalEl.classList.remove('modal--landscape');
+function closePhotoLightbox() {
+  document.getElementById("photoLightboxOverlay").classList.remove("is-open");
+  document.getElementById("photoLightboxImg").src = "";
+  document.getElementById("downloadPhotoBtn").href = "#";
+  const modalEl = document.querySelector("#photoLightboxOverlay .modal");
+  if (modalEl) modalEl.classList.remove("modal--landscape");
   lightboxPhotos = [];
   lightboxIndex = 0;
 }
@@ -1569,13 +1976,15 @@ function closePhotoLightbox(){
 /* Nama file unduhan dari judul tugas, dibersihkan dari karakter yang tidak
    aman untuk nama file, lalu dibubuhi nomor urut & ekstensi .jpg (hasil
    kompresi selalu JPEG). */
-function photoFileName(title, index = 0){
-  const safe = (title || 'foto-tugas')
-    .toLowerCase()
-    .normalize('NFKD').replace(/[\u0300-\u036f]/g, '') // hilangkan diakritik
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 60) || 'foto-tugas';
+function photoFileName(title, index = 0) {
+  const safe =
+    (title || "foto-tugas")
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "") // hilangkan diakritik
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 60) || "foto-tugas";
   return `${safe}-${index + 1}.jpg`;
 }
 
@@ -1583,158 +1992,213 @@ function photoFileName(title, index = 0){
 /* 11. KALENDER AKADEMIK                                                   */
 /* ---------------------------------------------------------------------- */
 const CAL_DOT_CLASS = {
-  'pts':'legend-dot--pts', 'pas':'legend-dot--pas', 'ukk':'legend-dot--ukk',
-  'tka':'legend-dot--tka', 'an':'legend-dot--an',
-  'libur-semester':'legend-dot--libur-semester', 'libur-nasional':'legend-dot--libur-nasional', 'sekolah':'legend-dot--sekolah',
-  'pribadi':'legend-dot--pribadi'
+  pts: "legend-dot--pts",
+  pas: "legend-dot--pas",
+  ukk: "legend-dot--ukk",
+  tka: "legend-dot--tka",
+  an: "legend-dot--an",
+  "libur-semester": "legend-dot--libur-semester",
+  "libur-nasional": "legend-dot--libur-nasional",
+  sekolah: "legend-dot--sekolah",
+  pribadi: "legend-dot--pribadi",
 };
 
-function eventsForDate(iso){ return allEvents().filter(e => e.date === iso); }
+function eventsForDate(iso) {
+  return allEvents().filter((e) => e.date === iso);
+}
 
-function renderCalendar(){
+function renderCalendar() {
   const year = calViewDate.getFullYear();
   const month = calViewDate.getMonth();
-  document.getElementById('calMonthLabel').textContent =
-    calViewDate.toLocaleDateString('id-ID', { month:'long', year:'numeric' });
+  document.getElementById("calMonthLabel").textContent =
+    calViewDate.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
 
   const firstDay = new Date(year, month, 1);
   const startOffset = firstDay.getDay(); // 0=Min
-  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   const daysInPrevMonth = new Date(year, month, 0).getDate();
 
-  const todayISO = new Date().toISOString().slice(0,10);
-  const grid = document.getElementById('calGrid');
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const grid = document.getElementById("calGrid");
   const cells = [];
 
-  for (let i=0; i<startOffset; i++){
+  for (let i = 0; i < startOffset; i++) {
     const dnum = daysInPrevMonth - startOffset + i + 1;
-    cells.push({ dnum, outside:true, iso:null });
+    cells.push({ dnum, outside: true, iso: null });
   }
-  for (let d=1; d<=daysInMonth; d++){
-    const iso = `${year}-${pad(month+1)}-${pad(d)}`;
-    cells.push({ dnum:d, outside:false, iso });
+  for (let d = 1; d <= daysInMonth; d++) {
+    const iso = `${year}-${pad(month + 1)}-${pad(d)}`;
+    cells.push({ dnum: d, outside: false, iso });
   }
-  while (cells.length % 7 !== 0){
-    cells.push({ dnum: cells.length - startOffset - daysInMonth + 1, outside:true, iso:null });
+  while (cells.length % 7 !== 0) {
+    cells.push({
+      dnum: cells.length - startOffset - daysInMonth + 1,
+      outside: true,
+      iso: null,
+    });
   }
 
-  grid.innerHTML = cells.map(c => {
-    if (c.outside) return `<div class="cal-cell is-outside"><span class="cal-daynum">${c.dnum}</span></div>`;
-    const evs = eventsForDate(c.iso);
-    const isToday = c.iso === todayISO;
-    const dots = evs.map(e => `<span class="cal-dot ${CAL_DOT_CLASS[e.type]}"></span>`).join('');
-    return `<div class="cal-cell ${isToday?'is-today':''} ${evs.length?'has-event':''}" data-iso="${c.iso}">
+  grid.innerHTML = cells
+    .map((c) => {
+      if (c.outside)
+        return `<div class="cal-cell is-outside"><span class="cal-daynum">${c.dnum}</span></div>`;
+      const evs = eventsForDate(c.iso);
+      const isToday = c.iso === todayISO;
+      const dots = evs
+        .map((e) => `<span class="cal-dot ${CAL_DOT_CLASS[e.type]}"></span>`)
+        .join("");
+      return `<div class="cal-cell ${isToday ? "is-today" : ""} ${evs.length ? "has-event" : ""}" data-iso="${c.iso}">
       <span class="cal-daynum">${c.dnum}</span>
       <span class="cal-dots">${dots}</span>
     </div>`;
-  }).join('');
+    })
+    .join("");
 
-  grid.querySelectorAll('.cal-cell.has-event').forEach(cell=>{
+  grid.querySelectorAll(".cal-cell.has-event").forEach((cell) => {
     cell.onclick = () => showCalDetail(cell.dataset.iso);
   });
 
   renderUpcomingEvents();
 }
 
-function showCalDetail(iso){
+function showCalDetail(iso) {
   const evs = eventsForDate(iso);
-  const label = new Date(iso + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  document.getElementById('calEventDetail').innerHTML = `<strong>${label}</strong>` +
-    evs.map(e => `<div class="cal-event-row">
+  const label = new Date(iso + "T00:00:00").toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  document.getElementById("calEventDetail").innerHTML =
+    `<strong>${label}</strong>` +
+    evs
+      .map(
+        (e) => `<div class="cal-event-row">
         <span>${CAL_TYPE_LABEL[e.type]}: ${escapeHTML(e.title)}</span>
-        ${(e.custom && isAdmin) ? `<button class="icon-btn icon-btn--tiny" data-action="delete-event" data-id="${e.id}" title="Hapus acara">&times;</button>` : ''}
-      </div>`).join('');
+        ${e.custom && isAdmin ? `<button class="icon-btn icon-btn--tiny" data-action="delete-event" data-id="${e.id}" title="Hapus acara">&times;</button>` : ""}
+      </div>`,
+      )
+      .join("");
 
-  document.querySelectorAll('[data-action="delete-event"]').forEach(btn=>{
+  document.querySelectorAll('[data-action="delete-event"]').forEach((btn) => {
     btn.onclick = async () => {
       const id = btn.dataset.id;
       try {
-        await deleteDoc(doc(db, 'calendarEvents', id));
+        await deleteDoc(doc(db, "calendarEvents", id));
         showCalDetail(iso);
-      } catch(err){
+      } catch (err) {
         console.error(err);
-        showDbError('Gagal menghapus acara dari database. Cek koneksi internet.');
+        showDbError(
+          "Gagal menghapus acara dari database. Cek koneksi internet.",
+        );
       }
     };
   });
 }
 
-function renderUpcomingEvents(){
-  const todayISO = new Date().toISOString().slice(0,10);
+function renderUpcomingEvents() {
+  const todayISO = new Date().toISOString().slice(0, 10);
   const upcoming = [...allEvents()]
-    .filter(e => e.date >= todayISO)
-    .sort((a,b) => a.date.localeCompare(b.date));
+    .filter((e) => e.date >= todayISO)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
   // satu entri per judul unik terdekat
   const seen = new Set();
   const unique = [];
-  for (const e of upcoming){
-    if (!seen.has(e.title)){ seen.add(e.title); unique.push(e); }
+  for (const e of upcoming) {
+    if (!seen.has(e.title)) {
+      seen.add(e.title);
+      unique.push(e);
+    }
     if (unique.length >= 4) break;
   }
 
-  const el = document.getElementById('upcomingEvents');
-  el.innerHTML = unique.length ? unique.map(e => `
+  const el = document.getElementById("upcomingEvents");
+  el.innerHTML = unique.length
+    ? unique
+        .map(
+          (e) => `
     <div class="upcoming-item">
       <span class="upcoming-item__title">${e.title}</span>
-      <span class="upcoming-item__meta">${e.date.split('-').reverse().join('-')}</span>
-    </div>`).join('') : `<p class="empty-note">Tidak ada agenda mendatang.</p>`;
+      <span class="upcoming-item__meta">${e.date.split("-").reverse().join("-")}</span>
+    </div>`,
+        )
+        .join("")
+    : `<p class="empty-note">Tidak ada agenda mendatang.</p>`;
 }
 
 /* ---------- Modal tambah acara kalender ---------- */
-function openCalEventModal(){
-  const dateInput = document.getElementById('calInputDate');
-  if (!dateInput.value){
-    const y = calViewDate.getFullYear(), m = calViewDate.getMonth();
+function openCalEventModal() {
+  const dateInput = document.getElementById("calInputDate");
+  if (!dateInput.value) {
+    const y = calViewDate.getFullYear(),
+      m = calViewDate.getMonth();
     const today = new Date();
-    const usableDate = (today.getFullYear()===y && today.getMonth()===m) ? today : new Date(y, m, 1);
-    dateInput.value = usableDate.toISOString().slice(0,10);
+    const usableDate =
+      today.getFullYear() === y && today.getMonth() === m
+        ? today
+        : new Date(y, m, 1);
+    dateInput.value = usableDate.toISOString().slice(0, 10);
   }
-  document.getElementById('calEventModalOverlay').classList.add('is-open');
+  document.getElementById("calEventModalOverlay").classList.add("is-open");
 }
-function closeCalEventModal(){
-  document.getElementById('calEventModalOverlay').classList.remove('is-open');
-  document.getElementById('calEventForm').reset();
+function closeCalEventModal() {
+  document.getElementById("calEventModalOverlay").classList.remove("is-open");
+  document.getElementById("calEventForm").reset();
 }
-function handleCalEventFormSubmit(e){
+function handleCalEventFormSubmit(e) {
   e.preventDefault();
-  const date = document.getElementById('calInputDate').value;
-  const title = document.getElementById('calInputTitle').value.trim();
-  const type = document.getElementById('calInputType').value;
+  const date = document.getElementById("calInputDate").value;
+  const title = document.getElementById("calInputTitle").value.trim();
+  const type = document.getElementById("calInputType").value;
   if (!date || !title) return;
 
-  const submitBtn = document.querySelector('#calEventForm button[type="submit"]');
+  const submitBtn = document.querySelector(
+    '#calEventForm button[type="submit"]',
+  );
   submitBtn.disabled = true;
   addDoc(colCalEvents, { date, title, type })
-    .then(()=>{
+    .then(() => {
       closeCalEventModal();
-      const [y,m] = date.split('-').map(Number);
-      calViewDate = new Date(y, m-1, 1);
+      const [y, m] = date.split("-").map(Number);
+      calViewDate = new Date(y, m - 1, 1);
       renderCalendar();
       showCalDetail(date);
     })
-    .catch((err)=>{
+    .catch((err) => {
       console.error(err);
-      showDbError('Gagal menyimpan acara ke database. Cek koneksi internet & konfigurasi Firebase.');
+      showDbError(
+        "Gagal menyimpan acara ke database. Cek koneksi internet & konfigurasi Firebase.",
+      );
     })
-    .finally(()=>{ submitBtn.disabled = false; });
+    .finally(() => {
+      submitBtn.disabled = false;
+    });
 }
 
 /* ---------------------------------------------------------------------- */
 /* 12. JADWAL PELAJARAN                                                    */
 /* ---------------------------------------------------------------------- */
-const CATEGORY_BADGE = { teori:'badge--teori', kejuruan:'badge--kejuruan', olahraga:'badge--olahraga', khusus:'badge--khusus' };
+const CATEGORY_BADGE = {
+  teori: "badge--teori",
+  kejuruan: "badge--kejuruan",
+  olahraga: "badge--olahraga",
+  khusus: "badge--khusus",
+};
 
-function renderJadwal(){
+function renderJadwal() {
   const scheduleBlock = SCHEDULES[jadwalTabBlok];
-  const container = document.getElementById('jadwalDays');
+  const container = document.getElementById("jadwalDays");
   const todayDayKey = DAY_ORDER[(new Date().getDay() + 6) % 7]; // Senin=0, Sabtu/Minggu -> undefined
-  container.innerHTML = DAY_ORDER.map(dayKey => {
+  container.innerHTML = DAY_ORDER.map((dayKey) => {
     const rows = buildDayRows(dayKey, scheduleBlock);
-    const roomsUsed = [...new Set(rows.filter(r=>r.type==='subject').map(r=>r.room))].join(' · ');
-    const rowsHTML = rows.map(r => {
-      if (r.type === 'subject'){
-        return `<div class="slot-row">
+    const roomsUsed = [
+      ...new Set(rows.filter((r) => r.type === "subject").map((r) => r.room)),
+    ].join(" · ");
+    const rowsHTML = rows
+      .map((r) => {
+        if (r.type === "subject") {
+          return `<div class="slot-row">
           <span class="slot-time">${r.start}–${r.end}</span>
           <span class="slot-info">
             <span class="slot-subject">${r.subject} <span class="badge ${CATEGORY_BADGE[r.category]}">${r.category}</span></span>
@@ -1742,74 +2206,78 @@ function renderJadwal(){
           </span>
           <span class="slot-jam">${r.jamLabel}</span>
         </div>`;
-      }
-      const cls = r.type === 'special' ? 'is-special' : 'is-break';
-      return `<div class="slot-row ${cls}">
+        }
+        const cls = r.type === "special" ? "is-special" : "is-break";
+        return `<div class="slot-row ${cls}">
         <span class="slot-time">${r.start}–${r.end}</span>
         <span class="slot-info"><span class="slot-subject">${r.label}</span></span>
         <span class="slot-jam"></span>
       </div>`;
-    }).join('');
+      })
+      .join("");
 
     const isToday = dayKey === todayDayKey;
-    return `<div class="day-card acc${isToday ? ' is-open' : ''}">
-      <div class="day-card__head acc__head" role="button" tabindex="0" aria-expanded="${isToday}"><span class="acc__chev"></span><h4>${DAY_LABELS[dayKey]}${isToday ? ' <span class="acc__count">hari ini</span>' : ''}</h4><span class="day-card__room">${roomsUsed}</span></div>
+    return `<div class="day-card acc${isToday ? " is-open" : ""}">
+      <div class="day-card__head acc__head" role="button" tabindex="0" aria-expanded="${isToday}"><span class="acc__chev"></span><h4>${DAY_LABELS[dayKey]}${isToday ? ' <span class="acc__count">hari ini</span>' : ""}</h4><span class="day-card__room">${roomsUsed}</span></div>
       <div class="day-card__body acc__body">${rowsHTML || '<div class="slot-row"><span class="slot-info">Tidak ada jadwal</span></div>'}</div>
     </div>`;
-  }).join('');
+  }).join("");
 }
 
 /* ---------------------------------------------------------------------- */
 /* 13. KAS KELAS (iuran bulanan — per siswa)                              */
 /* ---------------------------------------------------------------------- */
-const KAS_AMOUNT = 10000;           // Rp per bulan
-const KAS_START = '2026-08';        // awal tahun ajaran 2026/2027
-const KAS_END   = '2027-06';        // akhir tahun ajaran
+const KAS_AMOUNT = 10000; // Rp per bulan
+const KAS_START = "2026-08"; // awal tahun ajaran 2026/2027
+const KAS_END = "2027-06"; // akhir tahun ajaran
 
 // Data siswa — XI PPLG A, SMK Negeri 2 Klaten, TP 2025/2026
 // (No Induk & Nama sesuai Daftar Hadir Murid Baru)
 const STUDENTS = [
-  { induk:'25.7.1007-01', nama:'ABDULLAH RIZKI JULIANO', jk:'L' },
-  { induk:'25.7.1008-02', nama:'ADIL PAMBUDI', jk:'L' },
-  { induk:'25.7.1009-03', nama:'ALMIRA SAFA PERMATA', jk:'P' },
-  { induk:'25.7.1010-04', nama:'ALVIANA AYU WULANDARI', jk:'P' },
-  { induk:'25.7.1011-05', nama:'ANASTA SEPTRIA AULIYANA', jk:'P' },
-  { induk:'25.7.1012-06', nama:'ANNE ELLOK RAHMA MAULIDA', jk:'P' },
-  { induk:'25.7.1013-07', nama:'ASHILLA PUTRI ROMADHONI', jk:'P' },
-  { induk:'25.7.1014-08', nama:'AZIZAH NASWA NUR ALIVIA', jk:'P' },
-  { induk:'25.7.1015-09', nama:'BUNGA CAMELIA SARI', jk:'P' },
-  { induk:'25.7.1016-10', nama:'DHANI ARYO MAULANA', jk:'L' },
-  { induk:'25.7.1017-11', nama:'DZAKI IBRAR MUKLISIN', jk:'L' },
-  { induk:'25.7.1018-12', nama:'FAIZ DAAREN EL FATIH BIN AWALUDIN', jk:'L' },
-  { induk:'25.7.1019-13', nama:'FATIN NADA SALSABILA', jk:'P' },
-  { induk:'25.7.1020-14', nama:'GALUH CAHYA NINGRUM', jk:'P' },
-  { induk:'25.7.1021-15', nama:'JAYINDRA KAKA ATMAJA', jk:'L' },
-  { induk:'25.7.1022-16', nama:'KIRANA PARAHITA BILQIS AGTYASTA', jk:'P' },
-  { induk:'25.7.1023-17', nama:'LISAN PATTI ARERAM', jk:'L' },
-  { induk:'25.7.1024-18', nama:'MADA VOLTA AGATHON', jk:'L' },
-  { induk:'25.7.1025-19', nama:'MOHAMMAD BILAL FAWAAZA', jk:'L' },
-  { induk:'25.7.1026-20', nama:'MUHAMMAD AINUR ROFIQ', jk:'L' },
-  { induk:'25.7.1027-21', nama:'MUHAMMAD FADIL', jk:'L' },
-  { induk:'25.7.1028-22', nama:'MUHAMMAD REZA AFFADHIL', jk:'L' },
-  { induk:'25.7.1030-23', nama:'NATAKA RADITYA AL FAQIH', jk:'L' },
-  { induk:'25.7.1031-24', nama:'NATASHA ARUM WIJAYANTI', jk:'P' },
-  { induk:'25.7.1032-25', nama:'PIVEL FAITH WIBAWA', jk:'L' },
-  { induk:'25.7.1033-26', nama:'RAAFI YUSRAN', jk:'L' },
-  { induk:'25.7.1034-27', nama:'REZA ALVINO OKTAVIANTO', jk:'L' },
-  { induk:'25.7.1035-28', nama:'SELVIYATUL SHOLIKAH', jk:'P' },
-  { induk:'25.7.1036-29', nama:'SHAFIRA MAULIA', jk:'P' },
-  { induk:'25.7.1037-30', nama:'ZAHRA RAMADHANI', jk:'P' },
-  { induk:'25.7.1038-31', nama:"ZAHRA' ZA'IIMAH ZAKIYYAH", jk:'P' },
+  { induk: "25.7.1007-01", nama: "ABDULLAH RIZKI JULIANO", jk: "L" },
+  { induk: "25.7.1008-02", nama: "ADIL PAMBUDI", jk: "L" },
+  { induk: "25.7.1009-03", nama: "ALMIRA SAFA PERMATA", jk: "P" },
+  { induk: "25.7.1010-04", nama: "ALVIANA AYU WULANDARI", jk: "P" },
+  { induk: "25.7.1011-05", nama: "ANASTA SEPTRIA AULIYANA", jk: "P" },
+  { induk: "25.7.1012-06", nama: "ANNE ELLOK RAHMA MAULIDA", jk: "P" },
+  { induk: "25.7.1013-07", nama: "ASHILLA PUTRI ROMADHONI", jk: "P" },
+  { induk: "25.7.1014-08", nama: "AZIZAH NASWA NUR ALIVIA", jk: "P" },
+  { induk: "25.7.1015-09", nama: "BUNGA CAMELIA SARI", jk: "P" },
+  { induk: "25.7.1016-10", nama: "DHANI ARYO MAULANA", jk: "L" },
+  { induk: "25.7.1017-11", nama: "DZAKI IBRAR MUKLISIN", jk: "L" },
+  { induk: "25.7.1018-12", nama: "FAIZ DAAREN EL FATIH BIN AWALUDIN", jk: "L" },
+  { induk: "25.7.1019-13", nama: "FATIN NADA SALSABILA", jk: "P" },
+  { induk: "25.7.1020-14", nama: "GALUH CAHYA NINGRUM", jk: "P" },
+  { induk: "25.7.1021-15", nama: "JAYINDRA KAKA ATMAJA", jk: "L" },
+  { induk: "25.7.1022-16", nama: "KIRANA PARAHITA BILQIS AGTYASTA", jk: "P" },
+  { induk: "25.7.1023-17", nama: "LISAN PATTI ARERAM", jk: "L" },
+  { induk: "25.7.1024-18", nama: "MADA VOLTA AGATHON", jk: "L" },
+  { induk: "25.7.1025-19", nama: "MOHAMMAD BILAL FAWAAZA", jk: "L" },
+  { induk: "25.7.1026-20", nama: "MUHAMMAD AINUR ROFIQ", jk: "L" },
+  { induk: "25.7.1027-21", nama: "MUHAMMAD FADIL", jk: "L" },
+  { induk: "25.7.1028-22", nama: "MUHAMMAD REZA AFFADHIL", jk: "L" },
+  { induk: "25.7.1030-23", nama: "NATAKA RADITYA AL FAQIH", jk: "L" },
+  { induk: "25.7.1031-24", nama: "NATASHA ARUM WIJAYANTI", jk: "P" },
+  { induk: "25.7.1032-25", nama: "PIVEL FAITH WIBAWA", jk: "L" },
+  { induk: "25.7.1033-26", nama: "RAAFI YUSRAN", jk: "L" },
+  { induk: "25.7.1034-27", nama: "REZA ALVINO OKTAVIANTO", jk: "L" },
+  { induk: "25.7.1035-28", nama: "SELVIYATUL SHOLIKAH", jk: "P" },
+  { induk: "25.7.1036-29", nama: "SHAFIRA MAULIA", jk: "P" },
+  { induk: "25.7.1037-30", nama: "ZAHRA RAMADHANI", jk: "P" },
+  { induk: "25.7.1038-31", nama: "ZAHRA' ZA'IIMAH ZAKIYYAH", jk: "P" },
 ];
 
-function kasMonthRange(startYM, endYM){
+function kasMonthRange(startYM, endYM) {
   const months = [];
-  let [y, m] = startYM.split('-').map(Number);
-  const [endY, endM] = endYM.split('-').map(Number);
-  while (y < endY || (y === endY && m <= endM)){
+  let [y, m] = startYM.split("-").map(Number);
+  const [endY, endM] = endYM.split("-").map(Number);
+  while (y < endY || (y === endY && m <= endM)) {
     months.push(`${y}-${pad(m)}`);
     m++;
-    if (m > 12){ m = 1; y++; }
+    if (m > 12) {
+      m = 1;
+      y++;
+    }
   }
   return months;
 }
@@ -1817,132 +2285,186 @@ const KAS_MONTHS = kasMonthRange(KAS_START, KAS_END);
 
 // kasData: { [noInduk]: { [ym]: { paid:true, paidAt:'YYYY-MM-DD' } } } — disinkron realtime dari Firestore
 let kasData = {};
-let kasSearchTerm = '';
-let kasFilterStatus = 'all';
+let kasSearchTerm = "";
+let kasFilterStatus = "all";
 const kasExpanded = new Set(); // no induk siswa yang sedang dibuka rinciannya
 
-function kasDocId(induk, ym){ return `${induk}_${ym}`; }
-
-function subscribeKas(){
-  onSnapshot(colKas, (snap)=>{
-    const data = {};
-    STUDENTS.forEach(s => { data[s.induk] = {}; });
-    snap.docs.forEach(d => {
-      const rec = d.data();
-      if (!rec || !rec.induk || !rec.ym) return;
-      if (!data[rec.induk]) data[rec.induk] = {};
-      data[rec.induk][rec.ym] = { paid: !!rec.paid, paidAt: rec.paidAt || null };
-    });
-    kasData = data;
-    renderKas();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat data kas dari database. Cek koneksi internet & konfigurasi Firebase.');
-  });
+function kasDocId(induk, ym) {
+  return `${induk}_${ym}`;
 }
 
-async function toggleKasBulan(induk, ym){
-  const entry = (kasData[induk] && kasData[induk][ym]) || { paid:false };
+function subscribeKas() {
+  onSnapshot(
+    colKas,
+    (snap) => {
+      const data = {};
+      STUDENTS.forEach((s) => {
+        data[s.induk] = {};
+      });
+      snap.docs.forEach((d) => {
+        const rec = d.data();
+        if (!rec || !rec.induk || !rec.ym) return;
+        if (!data[rec.induk]) data[rec.induk] = {};
+        data[rec.induk][rec.ym] = {
+          paid: !!rec.paid,
+          paidAt: rec.paidAt || null,
+        };
+      });
+      kasData = data;
+      renderKas();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat data kas dari database. Cek koneksi internet & konfigurasi Firebase.",
+      );
+    },
+  );
+}
+
+async function toggleKasBulan(induk, ym) {
+  const entry = (kasData[induk] && kasData[induk][ym]) || { paid: false };
   const paid = !entry.paid;
-  const paidAt = paid ? new Date().toISOString().slice(0,10) : null;
+  const paidAt = paid ? new Date().toISOString().slice(0, 10) : null;
   try {
-    await setDoc(doc(db, 'kasPayments', kasDocId(induk, ym)), { induk, ym, paid, paidAt });
-  } catch(err){
+    await setDoc(doc(db, "kasPayments", kasDocId(induk, ym)), {
+      induk,
+      ym,
+      paid,
+      paidAt,
+    });
+  } catch (err) {
     console.error(err);
-    showDbError('Gagal menyimpan status kas ke database. Cek koneksi internet.');
+    showDbError(
+      "Gagal menyimpan status kas ke database. Cek koneksi internet.",
+    );
   }
 }
 
-function kasMonthLabel(ym){
-  const [y,m] = ym.split('-').map(Number);
-  return new Date(y, m-1, 1).toLocaleDateString('id-ID', { month:'long', year:'numeric' });
+function kasMonthLabel(ym) {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("id-ID", {
+    month: "long",
+    year: "numeric",
+  });
 }
-function kasMonthShort(ym){
-  const [y,m] = ym.split('-').map(Number);
-  return new Date(y, m-1, 1).toLocaleDateString('id-ID', { month:'short' });
+function kasMonthShort(ym) {
+  const [y, m] = ym.split("-").map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString("id-ID", { month: "short" });
 }
-function formatRupiah(n){ return 'Rp' + n.toLocaleString('id-ID'); }
+function formatRupiah(n) {
+  return "Rp" + n.toLocaleString("id-ID");
+}
 
-function kasStudentSummary(induk, currentYM){
+function kasStudentSummary(induk, currentYM) {
   const records = kasData[induk] || {};
-  const paidCount = KAS_MONTHS.filter(ym => records[ym] && records[ym].paid).length;
-  const dueSoFar = KAS_MONTHS.filter(ym => ym <= currentYM).length;
+  const paidCount = KAS_MONTHS.filter(
+    (ym) => records[ym] && records[ym].paid,
+  ).length;
+  const dueSoFar = KAS_MONTHS.filter((ym) => ym <= currentYM).length;
   const unpaidSoFar = Math.max(dueSoFar - paidCount, 0);
   const paidThisMonth = !!(records[currentYM] && records[currentYM].paid);
-  return { paidCount, unpaidSoFar, paidThisMonth, totalCollected: paidCount * KAS_AMOUNT };
+  return {
+    paidCount,
+    unpaidSoFar,
+    paidThisMonth,
+    totalCollected: paidCount * KAS_AMOUNT,
+  };
 }
 
-function renderKas(){
-  const currentYM = `${new Date().getFullYear()}-${pad(new Date().getMonth()+1)}`;
+function renderKas() {
+  const currentYM = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
 
   // ringkasan seluruh kelas
-  let totalCollectedAll = 0, lunasBulanIni = 0, totalTunggakanAll = 0;
-  STUDENTS.forEach(s=>{
+  let totalCollectedAll = 0,
+    lunasBulanIni = 0,
+    totalTunggakanAll = 0;
+  STUDENTS.forEach((s) => {
     const sum = kasStudentSummary(s.induk, currentYM);
     totalCollectedAll += sum.totalCollected;
     totalTunggakanAll += sum.unpaidSoFar;
     if (sum.paidThisMonth) lunasBulanIni++;
   });
 
-  document.getElementById('kasTotalTerkumpul').textContent = formatRupiah(totalCollectedAll);
-  document.getElementById('kasLunasCount').textContent = `${lunasBulanIni} / ${STUDENTS.length} siswa`;
-  document.getElementById('kasTunggakanCount').textContent = `${totalTunggakanAll} bulan`;
+  document.getElementById("kasTotalTerkumpul").textContent =
+    formatRupiah(totalCollectedAll);
+  document.getElementById("kasLunasCount").textContent =
+    `${lunasBulanIni} / ${STUDENTS.length} siswa`;
+  document.getElementById("kasTunggakanCount").textContent =
+    `${totalTunggakanAll} bulan`;
 
   // filter & pencarian
   const term = kasSearchTerm.trim().toLowerCase();
-  let filtered = STUDENTS.filter(s=>{
-    if (term && !(s.nama.toLowerCase().includes(term) || s.induk.toLowerCase().includes(term))) return false;
+  let filtered = STUDENTS.filter((s) => {
+    if (
+      term &&
+      !(
+        s.nama.toLowerCase().includes(term) ||
+        s.induk.toLowerCase().includes(term)
+      )
+    )
+      return false;
     const sum = kasStudentSummary(s.induk, currentYM);
-    if (kasFilterStatus === 'lunas' && !sum.paidThisMonth) return false;
-    if (kasFilterStatus === 'tunggakan' && sum.unpaidSoFar === 0) return false;
+    if (kasFilterStatus === "lunas" && !sum.paidThisMonth) return false;
+    if (kasFilterStatus === "tunggakan" && sum.unpaidSoFar === 0) return false;
     return true;
   });
 
-  const countEl = document.getElementById('kasFilterCount');
+  const countEl = document.getElementById("kasFilterCount");
   if (countEl) countEl.textContent = `${filtered.length} siswa`;
 
-  const list = document.getElementById('kasList');
-  if (!filtered.length){
+  const list = document.getElementById("kasList");
+  if (!filtered.length) {
     list.innerHTML = `<div class="kas-empty">Tidak ada siswa yang cocok.</div>`;
     return;
   }
 
-  list.innerHTML = filtered.map(s=>{
-    const sum = kasStudentSummary(s.induk, currentYM);
-    const isExpanded = kasExpanded.has(s.induk);
-    const statusClass = sum.paidThisMonth ? 'is-paid' : (sum.unpaidSoFar > 0 ? 'is-overdue' : 'is-pending');
-    const statusLabel = sum.paidThisMonth ? 'Lunas bulan ini' : (sum.unpaidSoFar > 0 ? `Menunggak ${sum.unpaidSoFar} bln` : 'Belum bayar bulan ini');
+  list.innerHTML = filtered
+    .map((s) => {
+      const sum = kasStudentSummary(s.induk, currentYM);
+      const isExpanded = kasExpanded.has(s.induk);
+      const statusClass = sum.paidThisMonth
+        ? "is-paid"
+        : sum.unpaidSoFar > 0
+          ? "is-overdue"
+          : "is-pending";
+      const statusLabel = sum.paidThisMonth
+        ? "Lunas bulan ini"
+        : sum.unpaidSoFar > 0
+          ? `Menunggak ${sum.unpaidSoFar} bln`
+          : "Belum bayar bulan ini";
 
-    const monthsHTML = KAS_MONTHS.map(ym=>{
-      const rec = kasData[s.induk] && kasData[s.induk][ym];
-      const paid = !!(rec && rec.paid);
-      const isCurrent = ym === currentYM;
-      const isPast = ym < currentYM;
-      const overdue = !paid && isPast;
-      let mClass = paid ? 'is-paid' : (overdue ? 'is-overdue' : 'is-pending');
-      const tip = `${kasMonthLabel(ym)} — ${paid ? 'Lunas' + (rec.paidAt ? ' · dibayar ' + rec.paidAt.split('-').reverse().join('-') : '') : 'Belum bayar'}`;
-      if (!isAdmin){
-        return `<span class="kas-month-btn ${mClass} ${isCurrent ? 'is-current' : ''}" title="${tip}">${kasMonthShort(ym)}</span>`;
-      }
-      return `<button type="button" class="kas-month-btn ${mClass} ${isCurrent ? 'is-current' : ''}"
+      const monthsHTML = KAS_MONTHS.map((ym) => {
+        const rec = kasData[s.induk] && kasData[s.induk][ym];
+        const paid = !!(rec && rec.paid);
+        const isCurrent = ym === currentYM;
+        const isPast = ym < currentYM;
+        const overdue = !paid && isPast;
+        let mClass = paid ? "is-paid" : overdue ? "is-overdue" : "is-pending";
+        const tip = `${kasMonthLabel(ym)} — ${paid ? "Lunas" + (rec.paidAt ? " · dibayar " + rec.paidAt.split("-").reverse().join("-") : "") : "Belum bayar"}`;
+        if (!isAdmin) {
+          return `<span class="kas-month-btn ${mClass} ${isCurrent ? "is-current" : ""}" title="${tip}">${kasMonthShort(ym)}</span>`;
+        }
+        return `<button type="button" class="kas-month-btn ${mClass} ${isCurrent ? "is-current" : ""}"
         data-kas-toggle="${s.induk}" data-kas-ym="${ym}"
         title="${tip}">
         ${kasMonthShort(ym)}
       </button>`;
-    }).join('');
+      }).join("");
 
-    return `<div class="kas-row ${statusClass} ${isExpanded ? 'is-expanded' : ''}">
+      return `<div class="kas-row ${statusClass} ${isExpanded ? "is-expanded" : ""}">
       <button type="button" class="kas-row__head" data-kas-expand="${s.induk}">
-        <span class="kas-row__chevron">${isExpanded ? '▾' : '▸'}</span>
+        <span class="kas-row__chevron">${isExpanded ? "▾" : "▸"}</span>
         <div class="kas-row__info">
           <span class="kas-row__month">${s.nama} <span class="kas-row__tag kas-row__jk">${s.jk}</span></span>
           <span class="kas-row__meta">No. Induk ${s.induk} · ${sum.paidCount}/${KAS_MONTHS.length} bulan · ${formatRupiah(sum.totalCollected)} terkumpul</span>
         </div>
         <span class="kas-row__status">${statusLabel}</span>
       </button>
-      ${isExpanded ? `<div class="kas-months">${monthsHTML}</div>` : ''}
+      ${isExpanded ? `<div class="kas-months">${monthsHTML}</div>` : ""}
     </div>`;
-  }).join('');
+    })
+    .join("");
 }
 
 /* ---------------------------------------------------------------------- */
@@ -1953,144 +2475,174 @@ function renderKas(){
 /* ---------------------------------------------------------------------- */
 let kasTransactions = []; // disinkron realtime dari Firestore
 
-function subscribeKasTx(){
-  onSnapshot(colKasTx, (snap)=>{
-    kasTransactions = snap.docs
-      .map(d => ({ id: d.id, ...d.data() }))
-      .sort((a,b) => (b.date || '').localeCompare(a.date || '') || (b.createdAt||0) - (a.createdAt||0));
-    renderKasTx();
-  }, (err)=>{
-    console.error(err);
-    showDbError('Gagal memuat data pemasukan/pengeluaran kas dari database. Cek koneksi internet.');
-  });
+function subscribeKasTx() {
+  onSnapshot(
+    colKasTx,
+    (snap) => {
+      kasTransactions = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .sort(
+          (a, b) =>
+            (b.date || "").localeCompare(a.date || "") ||
+            (b.createdAt || 0) - (a.createdAt || 0),
+        );
+      renderKasTx();
+    },
+    (err) => {
+      console.error(err);
+      showDbError(
+        "Gagal memuat data pemasukan/pengeluaran kas dari database. Cek koneksi internet.",
+      );
+    },
+  );
 }
 
-function renderKasTx(){
-  const saldoEl = document.getElementById('kasSaldo');
-  const masukEl = document.getElementById('kasTotalMasuk');
-  const keluarEl = document.getElementById('kasTotalKeluar');
-  const list = document.getElementById('kasTxList');
+function renderKasTx() {
+  const saldoEl = document.getElementById("kasSaldo");
+  const masukEl = document.getElementById("kasTotalMasuk");
+  const keluarEl = document.getElementById("kasTotalKeluar");
+  const list = document.getElementById("kasTxList");
   if (!saldoEl || !masukEl || !keluarEl || !list) return; // view belum dirender
 
-  const totalMasuk = kasTransactions.filter(t => t.type === 'masuk').reduce((sum,t) => sum + Number(t.amount || 0), 0);
-  const totalKeluar = kasTransactions.filter(t => t.type === 'keluar').reduce((sum,t) => sum + Number(t.amount || 0), 0);
+  const totalMasuk = kasTransactions
+    .filter((t) => t.type === "masuk")
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
+  const totalKeluar = kasTransactions
+    .filter((t) => t.type === "keluar")
+    .reduce((sum, t) => sum + Number(t.amount || 0), 0);
 
-  const currentYM = `${new Date().getFullYear()}-${pad(new Date().getMonth()+1)}`;
+  const currentYM = `${new Date().getFullYear()}-${pad(new Date().getMonth() + 1)}`;
   let totalIuran = 0;
-  STUDENTS.forEach(s => { totalIuran += kasStudentSummary(s.induk, currentYM).totalCollected; });
+  STUDENTS.forEach((s) => {
+    totalIuran += kasStudentSummary(s.induk, currentYM).totalCollected;
+  });
 
   const saldo = totalIuran + totalMasuk - totalKeluar;
   saldoEl.textContent = formatRupiah(saldo);
   masukEl.textContent = formatRupiah(totalMasuk);
   keluarEl.textContent = formatRupiah(totalKeluar);
 
-  if (!kasTransactions.length){
+  if (!kasTransactions.length) {
     list.innerHTML = `<div class="kas-empty">Belum ada pemasukan lain atau pengeluaran yang dicatat.</div>`;
     return;
   }
 
-  list.innerHTML = kasTransactions.map(t => {
-    const isMasuk = t.type === 'masuk';
-    const dateLabel = (t.date || '').split('-').reverse().join('-');
-    return `<div class="kas-tx-row">
-      <span class="kas-tx-row__badge ${isMasuk ? 'is-masuk' : 'is-keluar'}">${isMasuk ? 'Pemasukan' : 'Pengeluaran'}</span>
+  list.innerHTML = kasTransactions
+    .map((t) => {
+      const isMasuk = t.type === "masuk";
+      const dateLabel = (t.date || "").split("-").reverse().join("-");
+      return `<div class="kas-tx-row">
+      <span class="kas-tx-row__badge ${isMasuk ? "is-masuk" : "is-keluar"}">${isMasuk ? "Pemasukan" : "Pengeluaran"}</span>
       <div class="kas-tx-row__info">
-        <span class="kas-tx-row__desc">${escapeHTML(t.desc || '-')}</span>
+        <span class="kas-tx-row__desc">${escapeHTML(t.desc || "-")}</span>
         <span class="kas-tx-row__date">${dateLabel}</span>
       </div>
-      <span class="kas-tx-row__amount ${isMasuk ? 'is-masuk' : 'is-keluar'}">${isMasuk ? '+' : '−'}${formatRupiah(Number(t.amount || 0))}</span>
-      ${isAdmin ? `<button type="button" class="btn btn--sm" data-action="deletetx" data-id="${t.id}">Hapus</button>` : ''}
+      <span class="kas-tx-row__amount ${isMasuk ? "is-masuk" : "is-keluar"}">${isMasuk ? "+" : "−"}${formatRupiah(Number(t.amount || 0))}</span>
+      ${isAdmin ? `<button type="button" class="btn btn--sm" data-action="deletetx" data-id="${t.id}">Hapus</button>` : ""}
     </div>`;
-  }).join('');
+    })
+    .join("");
 
-  if (isAdmin){
-    document.querySelectorAll('[data-action="deletetx"]').forEach(btn=>{
+  if (isAdmin) {
+    document.querySelectorAll('[data-action="deletetx"]').forEach((btn) => {
       btn.onclick = async () => {
         try {
-          await deleteDoc(doc(db, 'kasTransactions', btn.dataset.id));
-        } catch(err){
+          await deleteDoc(doc(db, "kasTransactions", btn.dataset.id));
+        } catch (err) {
           console.error(err);
-          showDbError('Gagal menghapus transaksi kas dari database. Cek koneksi internet.');
+          showDbError(
+            "Gagal menghapus transaksi kas dari database. Cek koneksi internet.",
+          );
         }
       };
     });
   }
 }
 
-function openKasTxModal(){
-  document.getElementById('kasTxForm').reset();
-  document.getElementById('txDate').value = new Date().toISOString().slice(0,10);
-  document.getElementById('kasTxModalOverlay').classList.add('is-open');
+function openKasTxModal() {
+  document.getElementById("kasTxForm").reset();
+  document.getElementById("txDate").value = new Date()
+    .toISOString()
+    .slice(0, 10);
+  document.getElementById("kasTxModalOverlay").classList.add("is-open");
 }
-function closeKasTxModal(){
-  document.getElementById('kasTxModalOverlay').classList.remove('is-open');
-  document.getElementById('kasTxForm').reset();
+function closeKasTxModal() {
+  document.getElementById("kasTxModalOverlay").classList.remove("is-open");
+  document.getElementById("kasTxForm").reset();
 }
 
-function handleKasTxFormSubmit(e){
+function handleKasTxFormSubmit(e) {
   e.preventDefault();
-  const type = document.getElementById('txType').value;
-  const date = document.getElementById('txDate').value;
-  const amount = Number(document.getElementById('txAmount').value);
-  const desc = document.getElementById('txDesc').value.trim();
+  const type = document.getElementById("txType").value;
+  const date = document.getElementById("txDate").value;
+  const amount = Number(document.getElementById("txAmount").value);
+  const desc = document.getElementById("txDesc").value.trim();
   if (!date || !amount || !desc) return;
 
   const submitBtn = document.querySelector('#kasTxForm button[type="submit"]');
   submitBtn.disabled = true;
   addDoc(colKasTx, { type, date, amount, desc, createdAt: Date.now() })
-    .then(()=>{ closeKasTxModal(); })
-    .catch((err)=>{
-      console.error(err);
-      showDbError('Gagal menyimpan transaksi kas ke database. Cek koneksi internet & konfigurasi Firebase.');
+    .then(() => {
+      closeKasTxModal();
     })
-    .finally(()=>{ submitBtn.disabled = false; });
+    .catch((err) => {
+      console.error(err);
+      showDbError(
+        "Gagal menyimpan transaksi kas ke database. Cek koneksi internet & konfigurasi Firebase.",
+      );
+    })
+    .finally(() => {
+      submitBtn.disabled = false;
+    });
 }
 
 /* ---------------------------------------------------------------------- */
 /* 14. TEMA                                                                 */
 /* ---------------------------------------------------------------------- */
-function applyTheme(theme){
+function applyTheme(theme) {
   document.body.dataset.theme = theme;
-  document.getElementById('iconSun').style.display = theme === 'light' ? 'none' : 'block';
-  document.getElementById('iconMoon').style.display = theme === 'light' ? 'block' : 'none';
+  document.getElementById("iconSun").style.display =
+    theme === "light" ? "none" : "block";
+  document.getElementById("iconMoon").style.display =
+    theme === "light" ? "block" : "none";
   if (HAS_STORAGE) localStorage.setItem(STORAGE_KEY_THEME, theme);
 }
 
-function toggleTheme(){
-  const isLight = document.body.dataset.theme === 'light';
-  applyTheme(isLight ? 'dark' : 'light');
+function toggleTheme() {
+  const isLight = document.body.dataset.theme === "light";
+  applyTheme(isLight ? "dark" : "light");
 }
 
 /* ---------------------------------------------------------------------- */
 /* 15. INIT                                                                 */
 /* ---------------------------------------------------------------------- */
-function init(){
+function init() {
   registerAuthListener();
   showStorageWarning();
 
   // Navigasi
-  document.querySelectorAll('.navlink').forEach(btn=>{
-    btn.addEventListener('click', () => setActiveView(btn.dataset.target));
+  document.querySelectorAll(".navlink").forEach((btn) => {
+    btn.addEventListener("click", () => setActiveView(btn.dataset.target));
   });
-  document.getElementById('navBurger').addEventListener('click', () => {
-    document.getElementById('mainNav').classList.toggle('is-open');
+  document.getElementById("navBurger").addEventListener("click", () => {
+    document.getElementById("mainNav").classList.toggle("is-open");
   });
-  document.getElementById('themeToggle').addEventListener('click', toggleTheme);
-  if (HAS_STORAGE){
+  document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+  if (HAS_STORAGE) {
     const savedTheme = localStorage.getItem(STORAGE_KEY_THEME);
     if (savedTheme) applyTheme(savedTheme);
   }
 
   // Blok aktif (dimuat sebelum status pertama kali dihitung)
-  const blokSelect = document.getElementById('blokAktifSelect');
-  if (HAS_STORAGE){
+  const blokSelect = document.getElementById("blokAktifSelect");
+  if (HAS_STORAGE) {
     const savedBlok = localStorage.getItem(STORAGE_KEY_BLOK);
-    if (savedBlok === 'umum' || savedBlok === 'produktif'){
+    if (savedBlok === "umum" || savedBlok === "produktif") {
       currentBlok = savedBlok;
       blokSelect.value = savedBlok;
     }
   }
-  blokSelect.addEventListener('change', (e)=>{
+  blokSelect.addEventListener("change", (e) => {
     currentBlok = e.target.value;
     if (HAS_STORAGE) localStorage.setItem(STORAGE_KEY_BLOK, currentBlok);
     updateStatusCard();
@@ -2105,76 +2657,113 @@ function init(){
   setInterval(updateGreeting, 60000);
 
   // Login Admin
-  document.getElementById('adminBadge').addEventListener('click', ()=>{
-    if (isAdmin){
-      signOut(auth).catch(err=>console.error(err));
+  document.getElementById("adminBadge").addEventListener("click", () => {
+    if (isAdmin) {
+      signOut(auth).catch((err) => console.error(err));
     } else {
       openAdminModal();
     }
   });
-  document.getElementById('closeAdminModal').addEventListener('click', closeAdminModal);
-  document.getElementById('adminModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'adminModalOverlay') closeAdminModal();
-  });
-  document.getElementById('adminForm').addEventListener('submit', handleAdminFormSubmit);
+  document
+    .getElementById("closeAdminModal")
+    .addEventListener("click", closeAdminModal);
+  document
+    .getElementById("adminModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "adminModalOverlay") closeAdminModal();
+    });
+  document
+    .getElementById("adminForm")
+    .addEventListener("submit", handleAdminFormSubmit);
 
   // Tugas
   renderSubjectSelects();
   renderTasks(); // render awal (kosong) sebelum data Firestore masuk
-  seedDefaultTasksIfEmpty().catch(err=>console.error(err));
+  seedDefaultTasksIfEmpty().catch((err) => console.error(err));
   subscribeTasks();
-  document.getElementById('filterSubject').addEventListener('change', renderTasks);
-  document.getElementById('sortDeadline').addEventListener('change', renderTasks);
-  document.getElementById('openTaskModal').addEventListener('click', openModal);
-  document.getElementById('closeTaskModal').addEventListener('click', closeModal);
-  document.getElementById('taskModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'taskModalOverlay') closeModal();
+  document
+    .getElementById("filterSubject")
+    .addEventListener("change", renderTasks);
+  document
+    .getElementById("sortDeadline")
+    .addEventListener("change", renderTasks);
+  document.getElementById("openTaskModal").addEventListener("click", openModal);
+  document
+    .getElementById("closeTaskModal")
+    .addEventListener("click", closeModal);
+  document.getElementById("taskModalOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "taskModalOverlay") closeModal();
   });
-  document.getElementById('taskForm').addEventListener('submit', handleTaskFormSubmit);
-  document.getElementById('inputPhoto').addEventListener('change', handleInputPhotoChange);
+  document
+    .getElementById("taskForm")
+    .addEventListener("submit", handleTaskFormSubmit);
+  document
+    .getElementById("inputPhoto")
+    .addEventListener("change", handleInputPhotoChange);
 
   // Foto tugas (tambah/hapus per-foto pada tugas yang sudah ada) + lightbox
-  document.getElementById('closeTaskPhotoModal').addEventListener('click', closeTaskPhotoModal);
-  document.getElementById('taskPhotoModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'taskPhotoModalOverlay') closeTaskPhotoModal();
-  });
-  document.getElementById('taskPhotoFile').addEventListener('change', handleTaskPhotoFileChange);
-  document.getElementById('taskPhotoForm').addEventListener('submit', handleTaskPhotoFormSubmit);
+  document
+    .getElementById("closeTaskPhotoModal")
+    .addEventListener("click", closeTaskPhotoModal);
+  document
+    .getElementById("taskPhotoModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "taskPhotoModalOverlay") closeTaskPhotoModal();
+    });
+  document
+    .getElementById("taskPhotoFile")
+    .addEventListener("change", handleTaskPhotoFileChange);
+  document
+    .getElementById("taskPhotoForm")
+    .addEventListener("submit", handleTaskPhotoFormSubmit);
 
-  document.getElementById('closePhotoLightbox').addEventListener('click', closePhotoLightbox);
-  document.getElementById('photoLightboxOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'photoLightboxOverlay') closePhotoLightbox();
-  });
-  document.getElementById('prevPhotoBtn').addEventListener('click', showPrevPhoto);
-  document.getElementById('nextPhotoBtn').addEventListener('click', showNextPhoto);
+  document
+    .getElementById("closePhotoLightbox")
+    .addEventListener("click", closePhotoLightbox);
+  document
+    .getElementById("photoLightboxOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "photoLightboxOverlay") closePhotoLightbox();
+    });
+  document
+    .getElementById("prevPhotoBtn")
+    .addEventListener("click", showPrevPhoto);
+  document
+    .getElementById("nextPhotoBtn")
+    .addEventListener("click", showNextPhoto);
 
   // Kalender
   renderCalendar();
   subscribeCalEvents();
-  document.getElementById('calPrev').addEventListener('click', ()=>{
-    calViewDate.setMonth(calViewDate.getMonth()-1); renderCalendar();
+  document.getElementById("calPrev").addEventListener("click", () => {
+    calViewDate.setMonth(calViewDate.getMonth() - 1);
+    renderCalendar();
   });
-  document.getElementById('calNext').addEventListener('click', ()=>{
-    calViewDate.setMonth(calViewDate.getMonth()+1); renderCalendar();
+  document.getElementById("calNext").addEventListener("click", () => {
+    calViewDate.setMonth(calViewDate.getMonth() + 1);
+    renderCalendar();
   });
 
   // Jadwal
-  if (HAS_STORAGE){
+  if (HAS_STORAGE) {
     const savedJadwalBlok = localStorage.getItem(STORAGE_KEY_JADWAL_BLOK);
-    if (savedJadwalBlok === 'umum' || savedJadwalBlok === 'produktif'){
+    if (savedJadwalBlok === "umum" || savedJadwalBlok === "produktif") {
       jadwalTabBlok = savedJadwalBlok;
-      document.querySelectorAll('.blok-btn').forEach(b=>{
-        b.classList.toggle('is-active', b.dataset.blok === savedJadwalBlok);
+      document.querySelectorAll(".blok-btn").forEach((b) => {
+        b.classList.toggle("is-active", b.dataset.blok === savedJadwalBlok);
       });
     }
   }
   renderJadwal();
-  document.querySelectorAll('.blok-btn').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      document.querySelectorAll('.blok-btn').forEach(b=>b.classList.remove('is-active'));
-      btn.classList.add('is-active');
+  document.querySelectorAll(".blok-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document
+        .querySelectorAll(".blok-btn")
+        .forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
       jadwalTabBlok = btn.dataset.blok;
-      if (HAS_STORAGE) localStorage.setItem(STORAGE_KEY_JADWAL_BLOK, jadwalTabBlok);
+      if (HAS_STORAGE)
+        localStorage.setItem(STORAGE_KEY_JADWAL_BLOK, jadwalTabBlok);
       renderJadwal();
     });
   });
@@ -2182,24 +2771,24 @@ function init(){
   // Kas
   renderKas(); // render awal (kosong) sebelum data Firestore masuk
   subscribeKas();
-  document.getElementById('kasSearch').addEventListener('input', (e)=>{
+  document.getElementById("kasSearch").addEventListener("input", (e) => {
     kasSearchTerm = e.target.value;
     renderKas();
   });
-  document.getElementById('kasFilterStatus').addEventListener('change', (e)=>{
+  document.getElementById("kasFilterStatus").addEventListener("change", (e) => {
     kasFilterStatus = e.target.value;
     renderKas();
   });
-  document.getElementById('kasList').addEventListener('click', (e)=>{
-    const expandBtn = e.target.closest('[data-kas-expand]');
-    if (expandBtn){
+  document.getElementById("kasList").addEventListener("click", (e) => {
+    const expandBtn = e.target.closest("[data-kas-expand]");
+    if (expandBtn) {
       const induk = expandBtn.dataset.kasExpand;
       if (kasExpanded.has(induk)) kasExpanded.delete(induk);
       else kasExpanded.add(induk);
       renderKas();
       return;
     }
-    const btn = e.target.closest('[data-kas-toggle]');
+    const btn = e.target.closest("[data-kas-toggle]");
     if (!btn) return;
     toggleKasBulan(btn.dataset.kasToggle, btn.dataset.kasYm);
   });
@@ -2207,99 +2796,191 @@ function init(){
   // Buku kas: pemasukan & pengeluaran
   renderKasTx(); // render awal (kosong) sebelum data Firestore masuk
   subscribeKasTx();
-  document.getElementById('openKasTxModal').addEventListener('click', openKasTxModal);
-  document.getElementById('closeKasTxModal').addEventListener('click', closeKasTxModal);
-  document.getElementById('kasTxModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'kasTxModalOverlay') closeKasTxModal();
-  });
-  document.getElementById('kasTxForm').addEventListener('submit', handleKasTxFormSubmit);
+  document
+    .getElementById("openKasTxModal")
+    .addEventListener("click", openKasTxModal);
+  document
+    .getElementById("closeKasTxModal")
+    .addEventListener("click", closeKasTxModal);
+  document
+    .getElementById("kasTxModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "kasTxModalOverlay") closeKasTxModal();
+    });
+  document
+    .getElementById("kasTxForm")
+    .addEventListener("submit", handleKasTxFormSubmit);
 
   // Tambah acara kalender
-  document.getElementById('openCalEventModal').addEventListener('click', openCalEventModal);
-  document.getElementById('closeCalEventModal').addEventListener('click', closeCalEventModal);
-  document.getElementById('calEventModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'calEventModalOverlay') closeCalEventModal();
-  });
-  document.getElementById('calEventForm').addEventListener('submit', handleCalEventFormSubmit);
+  document
+    .getElementById("openCalEventModal")
+    .addEventListener("click", openCalEventModal);
+  document
+    .getElementById("closeCalEventModal")
+    .addEventListener("click", closeCalEventModal);
+  document
+    .getElementById("calEventModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "calEventModalOverlay") closeCalEventModal();
+    });
+  document
+    .getElementById("calEventForm")
+    .addEventListener("submit", handleCalEventFormSubmit);
 
   // ============ TAMAN ============
   // Sambutan
   renderTamanSambutan();
   subscribeTamanSettings();
-  document.getElementById('editSambutanBtn').addEventListener('click', openSambutanModal);
-  document.getElementById('closeSambutanModal').addEventListener('click', closeSambutanModal);
-  document.getElementById('sambutanModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'sambutanModalOverlay') closeSambutanModal();
-  });
-  document.getElementById('sambutanForm').addEventListener('submit', handleSambutanFormSubmit);
-  document.getElementById('sambutanPhoto').addEventListener('change', handleSambutanPhotoChange);
-  const heroEl = document.getElementById('tamanHero');
-  if (heroEl){
-    heroEl.addEventListener('click', (e)=>{
-      if (e.target.closest('button')) return; // tombol di hero punya aksinya sendiri
-      if (tamanSambutan && tamanSambutan.photo){
-        openPhotoLightbox([tamanSambutan.photo], 0, tamanSambutan.title || 'Foto Taman Kelas', tamanSambutan.caption || '', true);
+  document
+    .getElementById("editSambutanBtn")
+    .addEventListener("click", openSambutanModal);
+  document
+    .getElementById("closeSambutanModal")
+    .addEventListener("click", closeSambutanModal);
+  document
+    .getElementById("sambutanModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "sambutanModalOverlay") closeSambutanModal();
+    });
+  document
+    .getElementById("sambutanForm")
+    .addEventListener("submit", handleSambutanFormSubmit);
+  document
+    .getElementById("sambutanPhoto")
+    .addEventListener("change", handleSambutanPhotoChange);
+  const heroEl = document.getElementById("tamanHero");
+  if (heroEl) {
+    heroEl.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return; // tombol di hero punya aksinya sendiri
+      if (tamanSambutan && tamanSambutan.photo) {
+        openPhotoLightbox(
+          [tamanSambutan.photo],
+          0,
+          tamanSambutan.title || "Foto Taman Kelas",
+          tamanSambutan.caption || "",
+          true,
+        );
       }
     });
   }
   // Tombol CTA hero
-  document.getElementById('tamanHeroExplore').addEventListener('click', ()=> openTamanSection('accPlants'));
-  document.getElementById('tamanHeroKegiatan').addEventListener('click', ()=> openTamanSection('accSelasa'));
+  document
+    .getElementById("tamanHeroExplore")
+    .addEventListener("click", () => openTamanSection("accPlants"));
+  document
+    .getElementById("tamanHeroKegiatan")
+    .addEventListener("click", () => openTamanSection("accSelasa"));
   updateTamanHeroStats();
 
   // QR Menu Taman
-  document.getElementById('openTamanQRBtn').addEventListener('click', openTamanQRModal);
-  document.getElementById('closeTamanQRModal').addEventListener('click', closeTamanQRModal);
-  document.getElementById('tamanQRModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'tamanQRModalOverlay') closeTamanQRModal();
-  });
-  document.getElementById('copyTamanQRLink').addEventListener('click', copyTamanQRLink);
-  document.getElementById('downloadTamanQR').addEventListener('click', downloadTamanQR);
-  document.getElementById('printTamanQR').addEventListener('click', printTamanQR);
+  document
+    .getElementById("openTamanQRBtn")
+    .addEventListener("click", openTamanQRModal);
+  document
+    .getElementById("closeTamanQRModal")
+    .addEventListener("click", closeTamanQRModal);
+  document
+    .getElementById("tamanQRModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "tamanQRModalOverlay") closeTamanQRModal();
+    });
+  document
+    .getElementById("copyTamanQRLink")
+    .addEventListener("click", copyTamanQRLink);
+  document
+    .getElementById("downloadTamanQR")
+    .addEventListener("click", downloadTamanQR);
+  document
+    .getElementById("printTamanQR")
+    .addEventListener("click", printTamanQR);
 
   // Daftar Tanaman
   renderPlantGrid(); // render awal (kosong) sebelum data Firestore masuk
   subscribeTamanPlants();
-  document.getElementById('openPlantModal').addEventListener('click', openPlantModal);
-  document.getElementById('closePlantModal').addEventListener('click', closePlantModal);
-  document.getElementById('plantModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'plantModalOverlay') closePlantModal();
-  });
-  document.getElementById('plantForm').addEventListener('submit', handlePlantFormSubmit);
-  document.getElementById('plantPhoto').addEventListener('change', handlePlantPhotoChange);
+  document
+    .getElementById("openPlantModal")
+    .addEventListener("click", openPlantModal);
+  document
+    .getElementById("closePlantModal")
+    .addEventListener("click", closePlantModal);
+  document
+    .getElementById("plantModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "plantModalOverlay") closePlantModal();
+    });
+  document
+    .getElementById("plantForm")
+    .addEventListener("submit", handlePlantFormSubmit);
+  document
+    .getElementById("plantPhoto")
+    .addEventListener("change", handlePlantPhotoChange);
 
   // Detail tanaman + QR
-  document.getElementById('closePlantDetailModal').addEventListener('click', closePlantDetailModal);
-  document.getElementById('plantDetailModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'plantDetailModalOverlay') closePlantDetailModal();
-  });
-  document.getElementById('downloadPlantQR').addEventListener('click', downloadPlantQR);
-  document.getElementById('printPlantQR').addEventListener('click', printPlantQR);
-  document.getElementById('editPlantFromDetail').addEventListener('click', editPlantFromDetail);
-  document.getElementById('deletePlantFromDetail').addEventListener('click', deletePlantFromDetail);
-  document.getElementById('exploreWebsiteBtn').addEventListener('click', exploreWebsite);
+  document
+    .getElementById("closePlantDetailModal")
+    .addEventListener("click", closePlantDetailModal);
+  document
+    .getElementById("plantDetailModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "plantDetailModalOverlay") closePlantDetailModal();
+    });
+  document
+    .getElementById("downloadPlantQR")
+    .addEventListener("click", downloadPlantQR);
+  document
+    .getElementById("printPlantQR")
+    .addEventListener("click", printPlantQR);
+  document
+    .getElementById("editPlantFromDetail")
+    .addEventListener("click", editPlantFromDetail);
+  document
+    .getElementById("deletePlantFromDetail")
+    .addEventListener("click", deletePlantFromDetail);
+  document
+    .getElementById("exploreWebsiteBtn")
+    .addEventListener("click", exploreWebsite);
 
   // Kegiatan Selasa Asri
   renderSelasaAsriList(); // render awal (kosong) sebelum data Firestore masuk
   subscribeTamanKegiatan();
-  document.getElementById('openKegiatanModal').addEventListener('click', openKegiatanModal);
-  document.getElementById('closeKegiatanModal').addEventListener('click', closeKegiatanModal);
-  document.getElementById('kegiatanModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'kegiatanModalOverlay') closeKegiatanModal();
-  });
-  document.getElementById('kegiatanForm').addEventListener('submit', handleKegiatanFormSubmit);
-  document.getElementById('kegiatanPhoto').addEventListener('change', handleKegiatanPhotoChange);
+  document
+    .getElementById("openKegiatanModal")
+    .addEventListener("click", openKegiatanModal);
+  document
+    .getElementById("closeKegiatanModal")
+    .addEventListener("click", closeKegiatanModal);
+  document
+    .getElementById("kegiatanModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "kegiatanModalOverlay") closeKegiatanModal();
+    });
+  document
+    .getElementById("kegiatanForm")
+    .addEventListener("submit", handleKegiatanFormSubmit);
+  document
+    .getElementById("kegiatanPhoto")
+    .addEventListener("change", handleKegiatanPhotoChange);
 
   // Piket Harian
   renderPiketHarianList(); // render awal (kosong) sebelum data Firestore masuk
   subscribeTamanPiket();
-  document.getElementById('openPiketModal').addEventListener('click', openPiketModal);
-  document.getElementById('closePiketModal').addEventListener('click', closePiketModal);
-  document.getElementById('piketModalOverlay').addEventListener('click', (e)=>{
-    if (e.target.id === 'piketModalOverlay') closePiketModal();
-  });
-  document.getElementById('piketForm').addEventListener('submit', handlePiketFormSubmit);
-  document.getElementById('piketPhoto').addEventListener('change', handlePiketPhotoChange);
+  document
+    .getElementById("openPiketModal")
+    .addEventListener("click", openPiketModal);
+  document
+    .getElementById("closePiketModal")
+    .addEventListener("click", closePiketModal);
+  document
+    .getElementById("piketModalOverlay")
+    .addEventListener("click", (e) => {
+      if (e.target.id === "piketModalOverlay") closePiketModal();
+    });
+  document
+    .getElementById("piketForm")
+    .addEventListener("submit", handlePiketFormSubmit);
+  document
+    .getElementById("piketPhoto")
+    .addEventListener("change", handlePiketPhotoChange);
 
   // Deep link menu (?menu=taman) — dipakai QR Menu Taman yang dipasang di taman.
   handleMenuDeepLink();
@@ -2309,5 +2990,6 @@ function init(){
 // partial ke DOM (lihat src/js/partials-loader.js), baru init() dijalankan.
 // Ini menggantikan 'DOMContentLoaded' karena konten HTML sekarang dimuat
 // secara async lewat fetch().
-if (window.__partialsReady) init();   // partial sudah selesai dimuat sebelum main.js siap
-else document.addEventListener('partials:ready', init, { once: true });
+if (window.__partialsReady)
+  init(); // partial sudah selesai dimuat sebelum main.js siap
+else document.addEventListener("partials:ready", init, { once: true });

@@ -1,87 +1,147 @@
-    <!-- ============ TAMAN ============ -->
-    <section class="view" id="view-taman">
-
-      <!-- HERO SECTION: sambutan + foto sampul taman + statistik + tombol aksi.
+<!-- ============ TAMAN ============ -->
+<section class="view" id="view-taman">
+  <!-- HERO SECTION: sambutan + foto sampul taman + statistik + tombol aksi.
            Halaman ini juga jadi tujuan QR Menu Taman (?menu=taman). -->
-      <div class="taman-hero" id="tamanHero">
-        <img class="taman-hero__photo" id="tamanHeroPhoto" src="" alt="Foto Taman Kelas" style="display:none;">
-        <div class="taman-hero__placeholder" id="tamanHeroPlaceholder">
-          <span class="taman-hero__placeholder-icon" aria-hidden="true">🌿</span>
+  <div class="taman-hero" id="tamanHero">
+    <img
+      class="taman-hero__photo"
+      id="tamanHeroPhoto"
+      src=""
+      alt="Foto Taman Kelas"
+      style="display: none"
+    />
+    <div class="taman-hero__placeholder" id="tamanHeroPlaceholder">
+      <span class="taman-hero__placeholder-icon" aria-hidden="true">🌿</span>
+    </div>
+    <div class="taman-hero__overlay"></div>
+
+    <div class="taman-hero__topbar">
+      <button
+        type="button"
+        class="btn btn--sm taman-hero__chip"
+        id="openTamanQRBtn"
+        title="Tampilkan QR Code menu taman untuk dicetak"
+      >
+        ▦ QR Menu Taman
+      </button>
+      <button
+        type="button"
+        class="btn btn--sm admin-only taman-hero__chip"
+        id="editSambutanBtn"
+      >
+        Edit Sambutan
+      </button>
+    </div>
+
+    <div class="taman-hero__text">
+      <span class="taman-hero__eyebrow">🌱 Taman Kelas · XI PPLG A</span>
+      <h2 class="taman-hero__title" id="tamanHeroTitle">
+        Selamat Datang di Taman Kelas
+      </h2>
+      <p class="taman-hero__caption" id="tamanHeroCaption">
+        Program taman kelas yang bertujuan untuk mengasah keterampilan dan
+        semangat kebersamaan siswa.
+      </p>
+
+      <div class="taman-hero__stats">
+        <div class="taman-hero__stat">
+          <strong id="tamanStatPlants">0</strong><span>Tanaman</span>
         </div>
-        <div class="taman-hero__overlay"></div>
-
-        <div class="taman-hero__topbar">
-          <button type="button" class="btn btn--sm taman-hero__chip" id="openTamanQRBtn" title="Tampilkan QR Code menu taman untuk dicetak">▦ QR Menu Taman</button>
-          <button type="button" class="btn btn--sm admin-only taman-hero__chip" id="editSambutanBtn">Edit Sambutan</button>
+        <div class="taman-hero__stat">
+          <strong id="tamanStatKegiatan">0</strong><span>Selasa Asri</span>
         </div>
-
-        <div class="taman-hero__text">
-          <span class="taman-hero__eyebrow">🌱 Taman Kelas · XI PPLG A</span>
-          <h2 class="taman-hero__title" id="tamanHeroTitle">Selamat Datang di Taman Kelas</h2>
-          <p class="taman-hero__caption" id="tamanHeroCaption">Program taman kelas yang bertujuan untuk mengasah keterampilan dan semangat kebersamaan siswa.</p>
-
-          <div class="taman-hero__stats">
-            <div class="taman-hero__stat"><strong id="tamanStatPlants">0</strong><span>Tanaman</span></div>
-            <div class="taman-hero__stat"><strong id="tamanStatKegiatan">0</strong><span>Selasa Asri</span></div>
-            <div class="taman-hero__stat"><strong id="tamanStatPiket">0</strong><span>Catatan Piket</span></div>
-          </div>
-
-          <div class="taman-hero__cta">
-            <button type="button" class="btn btn--primary" id="tamanHeroExplore">Jelajahi Tanaman ↓</button>
-            <button type="button" class="btn taman-hero__btn-glass" id="tamanHeroKegiatan">Lihat Kegiatan</button>
-          </div>
+        <div class="taman-hero__stat">
+          <strong id="tamanStatPiket">0</strong><span>Catatan Piket</span>
         </div>
       </div>
 
-      <!-- Daftar Tanaman -->
-      <div class="acc" id="accPlants">
-        <div class="acc__head" role="button" tabindex="0">
-          <span class="acc__chev"></span>
-          <div class="acc__title">
-            <h3>Daftar Tanaman <span class="acc__count" data-count-for="plantGrid">0</span></h3>
-            <p>Koleksi tanaman di taman kelas, lengkap dengan QR Code yang bisa dicetak dan ditempel di tiap tanaman.</p>
-          </div>
-          <div class="acc__actions">
-            <button class="btn btn--primary btn--sm admin-only" id="openPlantModal">+ Tanaman Baru</button>
-          </div>
-        </div>
-        <div class="acc__body">
-          <div class="plant-grid" id="plantGrid"></div>
-        </div>
+      <div class="taman-hero__cta">
+        <button type="button" class="btn btn--primary" id="tamanHeroExplore">
+          Jelajahi Tanaman ↓
+        </button>
+        <button
+          type="button"
+          class="btn taman-hero__btn-glass"
+          id="tamanHeroKegiatan"
+        >
+          Lihat Kegiatan
+        </button>
       </div>
+    </div>
+  </div>
 
-      <!-- Kegiatan Selasa Asri -->
-      <div class="acc" id="accSelasa">
-        <div class="acc__head" role="button" tabindex="0">
-          <span class="acc__chev"></span>
-          <div class="acc__title">
-            <h3>Kegiatan "Selasa Asri" <span class="acc__count" data-count-for="selasaAsriList">0</span></h3>
-            <p>Dokumentasi kegiatan bersih-bersih &amp; perawatan taman tiap Selasa pagi. Semua siswa bisa unggah dokumentasi.</p>
-          </div>
-          <div class="acc__actions">
-            <button class="btn btn--primary btn--sm" id="openKegiatanModal">+ Tambah Kegiatan</button>
-          </div>
-        </div>
-        <div class="acc__body">
-          <div class="activity-list" id="selasaAsriList"></div>
-        </div>
+  <!-- Daftar Tanaman -->
+  <div class="acc" id="accPlants">
+    <div class="acc__head" role="button" tabindex="0">
+      <span class="acc__chev"></span>
+      <div class="acc__title">
+        <h3>
+          Daftar Tanaman
+          <span class="acc__count" data-count-for="plantGrid">0</span>
+        </h3>
+        <p>
+          Koleksi tanaman di taman kelas, lengkap dengan QR Code yang bisa
+          dicetak dan ditempel di tiap tanaman.
+        </p>
       </div>
-
-      <!-- Piket Harian -->
-      <div class="acc" id="accPiket">
-        <div class="acc__head" role="button" tabindex="0">
-          <span class="acc__chev"></span>
-          <div class="acc__title">
-            <h3>Piket Harian Taman <span class="acc__count" data-count-for="piketHarianList">0</span></h3>
-            <p>Catatan piket harian merawat taman (menyiram, menyiangi, membersihkan). Petugas piket bisa unggah dokumentasi.</p>
-          </div>
-          <div class="acc__actions">
-            <button class="btn btn--primary btn--sm" id="openPiketModal">+ Tambah Piket</button>
-          </div>
-        </div>
-        <div class="acc__body">
-          <div class="activity-list" id="piketHarianList"></div>
-        </div>
+      <div class="acc__actions">
+        <button class="btn btn--primary btn--sm admin-only" id="openPlantModal">
+          + Tanaman Baru
+        </button>
       </div>
+    </div>
+    <div class="acc__body">
+      <div class="plant-grid" id="plantGrid"></div>
+    </div>
+  </div>
 
-    </section>
+  <!-- Kegiatan Selasa Asri -->
+  <div class="acc" id="accSelasa">
+    <div class="acc__head" role="button" tabindex="0">
+      <span class="acc__chev"></span>
+      <div class="acc__title">
+        <h3>
+          Kegiatan "Selasa Asri"
+          <span class="acc__count" data-count-for="selasaAsriList">0</span>
+        </h3>
+        <p>
+          Dokumentasi kegiatan bersih-bersih &amp; perawatan taman tiap Selasa
+          pagi. Semua siswa bisa unggah dokumentasi.
+        </p>
+      </div>
+      <div class="acc__actions">
+        <button class="btn btn--primary btn--sm" id="openKegiatanModal">
+          + Tambah Kegiatan
+        </button>
+      </div>
+    </div>
+    <div class="acc__body">
+      <div class="activity-list" id="selasaAsriList"></div>
+    </div>
+  </div>
+
+  <!-- Piket Harian -->
+  <div class="acc" id="accPiket">
+    <div class="acc__head" role="button" tabindex="0">
+      <span class="acc__chev"></span>
+      <div class="acc__title">
+        <h3>
+          Piket Harian Taman
+          <span class="acc__count" data-count-for="piketHarianList">0</span>
+        </h3>
+        <p>
+          Catatan piket harian merawat taman (menyiram, menyiangi,
+          membersihkan). Petugas piket bisa unggah dokumentasi.
+        </p>
+      </div>
+      <div class="acc__actions">
+        <button class="btn btn--primary btn--sm" id="openPiketModal">
+          + Tambah Piket
+        </button>
+      </div>
+    </div>
+    <div class="acc__body">
+      <div class="activity-list" id="piketHarianList"></div>
+    </div>
+  </div>
+</section>

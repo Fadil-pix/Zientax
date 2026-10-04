@@ -1,39 +1,53 @@
-    <!-- ============ KAS KELAS ============ -->
-    <section class="view" id="view-kas">
-      <div class="view-head">
-        <div>
-          <h2>Kas Kelas</h2>
-          <p class="view-sub">Iuran kas kelas Rp10.000 per bulan per siswa. Klik nama siswa untuk membuka rincian &amp; menandai bulan yang sudah dibayar.</p>
-        </div>
-      </div>
+<!-- ============ KAS KELAS ============ -->
+<section class="view" id="view-kas">
+  <div class="view-head">
+    <div>
+      <h2>Kas Kelas</h2>
+      <p class="view-sub">
+        Iuran kas kelas Rp10.000 per bulan per siswa. Klik nama siswa untuk
+        membuka rincian &amp; menandai bulan yang sudah dibayar.
+      </p>
+    </div>
+  </div>
 
-      <div class="stat-row kas-stats">
-        <div class="stat">
-          <span class="stat__num" id="kasTotalTerkumpul">Rp0</span>
-          <span class="stat__label">Total Iuran Terkumpul</span>
-        </div>
-        <div class="stat">
-          <span class="stat__num" id="kasLunasCount">0 / 0 siswa</span>
-          <span class="stat__label">Lunas Bulan Ini</span>
-        </div>
-        <div class="stat">
-          <span class="stat__num" id="kasTunggakanCount">0 bulan</span>
-          <span class="stat__label">Total Tunggakan Kelas</span>
-        </div>
-      </div>
+  <div class="stat-row kas-stats">
+    <div class="stat">
+      <span class="stat__num" id="kasTotalTerkumpul">Rp0</span>
+      <span class="stat__label">Total Iuran Terkumpul</span>
+    </div>
+    <div class="stat">
+      <span class="stat__num" id="kasLunasCount">0 / 0 siswa</span>
+      <span class="stat__label">Lunas Bulan Ini</span>
+    </div>
+    <div class="stat">
+      <span class="stat__num" id="kasTunggakanCount">0 bulan</span>
+      <span class="stat__label">Total Tunggakan Kelas</span>
+    </div>
+  </div>
 
-      <!-- Iuran per siswa -->
-      <div class="acc" id="accIuran">
-        <div class="acc__head" role="button" tabindex="0">
-          <span class="acc__chev"></span>
-          <div class="acc__title">
-            <h3>Iuran Siswa <span class="acc__count" data-count-for="kasList">0</span></h3>
-            <p>Daftar iuran bulanan tiap siswa. Klik nama siswa untuk melihat rincian.</p>
-          </div>
-        </div>
-        <div class="acc__body">
+  <!-- Iuran per siswa -->
+  <div class="acc" id="accIuran">
+    <div class="acc__head" role="button" tabindex="0">
+      <span class="acc__chev"></span>
+      <div class="acc__title">
+        <h3>
+          Iuran Siswa <span class="acc__count" data-count-for="kasList">0</span>
+        </h3>
+        <p>
+          Daftar iuran bulanan tiap siswa. Klik nama siswa untuk melihat
+          rincian.
+        </p>
+      </div>
+    </div>
+    <div class="acc__body">
       <div class="filter-bar">
-        <input type="text" id="kasSearch" class="select" placeholder="Cari nama" style="flex:1; min-width:200px;">
+        <input
+          type="text"
+          id="kasSearch"
+          class="select"
+          placeholder="Cari nama"
+          style="flex: 1; min-width: 200px"
+        />
         <select id="kasFilterStatus" class="select">
           <option value="all">Semua Siswa</option>
           <option value="lunas">Lunas Bulan Ini</option>
@@ -43,23 +57,30 @@
       </div>
 
       <div class="kas-list" id="kasList"></div>
+    </div>
+  </div>
 
-        </div>
+  <!-- Buku kas -->
+  <div class="acc" id="accBukuKas">
+    <div class="acc__head" role="button" tabindex="0">
+      <span class="acc__chev"></span>
+      <div class="acc__title">
+        <h3>
+          Buku Kas — Pemasukan &amp; Pengeluaran
+          <span class="acc__count" data-count-for="kasTxList">0</span>
+        </h3>
+        <p>
+          Pemasukan lain (selain iuran) dan pengeluaran. Saldo = iuran +
+          pemasukan lain − pengeluaran.
+        </p>
       </div>
-
-      <!-- Buku kas -->
-      <div class="acc" id="accBukuKas">
-        <div class="acc__head" role="button" tabindex="0">
-          <span class="acc__chev"></span>
-          <div class="acc__title">
-            <h3>Buku Kas — Pemasukan &amp; Pengeluaran <span class="acc__count" data-count-for="kasTxList">0</span></h3>
-            <p>Pemasukan lain (selain iuran) dan pengeluaran. Saldo = iuran + pemasukan lain − pengeluaran.</p>
-          </div>
-          <div class="acc__actions">
-            <button class="btn btn--primary btn--sm admin-only" id="openKasTxModal">+ Transaksi</button>
-          </div>
-        </div>
-        <div class="acc__body">
+      <div class="acc__actions">
+        <button class="btn btn--primary btn--sm admin-only" id="openKasTxModal">
+          + Transaksi
+        </button>
+      </div>
+    </div>
+    <div class="acc__body">
       <div class="stat-row kas-stats">
         <div class="stat">
           <span class="stat__num" id="kasSaldo">Rp0</span>
@@ -76,7 +97,6 @@
       </div>
 
       <div class="kas-tx-list" id="kasTxList"></div>
-        </div>
-      </div>
-
-    </section>
+    </div>
+  </div>
+</section>

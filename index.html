@@ -1,59 +1,64 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zientax — XI PPLG A</title>
-  <meta name="description" content="Dashboard kelas XI PPLG A — SMK Negeri 2 Klaten">
-  <link rel="icon" type="image/png" href="assets/images/logo.png">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Zientax — XI PPLG A</title>
+    <meta
+      name="description"
+      content="Dashboard kelas XI PPLG A — SMK Negeri 2 Klaten"
+    />
+    <link rel="icon" type="image/png" href="assets/images/logo.png" />
 
-  <!-- Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
-  <!-- CSS: urutan PENTING (base dulu, responsive terakhir) -->
-  <link rel="stylesheet" href="src/css/00-base.css">
-  <link rel="stylesheet" href="src/css/01-layout.css">
-  <link rel="stylesheet" href="src/css/02-components.css">
-  <link rel="stylesheet" href="src/css/03-pages.css">
-  <link rel="stylesheet" href="src/css/04-modals.css">
-  <link rel="stylesheet" href="src/css/05-responsive.css">
-</head>
-<body data-theme="dark">
+    <!-- CSS: urutan PENTING (base dulu, responsive terakhir) -->
+    <link rel="stylesheet" href="src/css/00-base.css" />
+    <link rel="stylesheet" href="src/css/01-layout.css" />
+    <link rel="stylesheet" href="src/css/02-components.css" />
+    <link rel="stylesheet" href="src/css/03-pages.css" />
+    <link rel="stylesheet" href="src/css/04-modals.css" />
+    <link rel="stylesheet" href="src/css/05-responsive.css" />
+  </head>
+  <body data-theme="dark">
+    <!-- Navigasi atas -->
+    <div data-include="public/partials/nav.html"></div>
 
-  <!-- Navigasi atas -->
-  <div data-include="public/partials/nav.html"></div>
+    <!-- Halaman / menu -->
+    <main class="app">
+      <div data-include="public/partials/view-dashboard.html"></div>
+      <div data-include="public/partials/view-tugas.html"></div>
+      <div data-include="public/partials/view-kalender.html"></div>
+      <div data-include="public/partials/view-jadwal.html"></div>
+      <div data-include="public/partials/view-kas.html"></div>
+      <div data-include="public/partials/view-taman.html"></div>
+    </main>
 
-  <!-- Halaman / menu -->
-  <main class="app">
-    <div data-include="public/partials/view-dashboard.html"></div>
-    <div data-include="public/partials/view-tugas.html"></div>
-    <div data-include="public/partials/view-kalender.html"></div>
-    <div data-include="public/partials/view-jadwal.html"></div>
-    <div data-include="public/partials/view-kas.html"></div>
-    <div data-include="public/partials/view-taman.html"></div>
-  </main>
+    <!-- Modal -->
+    <div data-include="public/partials/modal-admin.html"></div>
+    <div data-include="public/partials/modal-task.html"></div>
+    <div data-include="public/partials/modal-task-photo.html"></div>
+    <div data-include="public/partials/modal-cal-event.html"></div>
+    <div data-include="public/partials/modal-kas-tx.html"></div>
+    <div data-include="public/partials/modal-plant.html"></div>
+    <div data-include="public/partials/modal-plant-detail.html"></div>
+    <div data-include="public/partials/modal-sambutan.html"></div>
+    <div data-include="public/partials/modal-kegiatan.html"></div>
+    <div data-include="public/partials/modal-piket.html"></div>
+    <div data-include="public/partials/modal-photo-lightbox.html"></div>
+    <div data-include="public/partials/modal-taman-qr.html"></div>
 
-  <!-- Modal -->
-  <div data-include="public/partials/modal-admin.html"></div>
-  <div data-include="public/partials/modal-task.html"></div>
-  <div data-include="public/partials/modal-task-photo.html"></div>
-  <div data-include="public/partials/modal-cal-event.html"></div>
-  <div data-include="public/partials/modal-kas-tx.html"></div>
-  <div data-include="public/partials/modal-plant.html"></div>
-  <div data-include="public/partials/modal-plant-detail.html"></div>
-  <div data-include="public/partials/modal-sambutan.html"></div>
-  <div data-include="public/partials/modal-kegiatan.html"></div>
-  <div data-include="public/partials/modal-piket.html"></div>
-  <div data-include="public/partials/modal-photo-lightbox.html"></div>
-  <div data-include="public/partials/modal-taman-qr.html"></div>
+    <!-- Library QR Code (dipakai QR tanaman & QR menu) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-  <!-- Library QR Code (dipakai QR tanaman & QR menu) -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-  <!-- Urutan PENTING: loader partial dulu, lalu aplikasi utama -->
-  <script src="src/js/partials-loader.js"></script>
-  <script type="module" src="src/js/main.js"></script>
-</body>
+    <!-- Urutan PENTING: loader partial dulu, lalu aplikasi utama -->
+    <script src="src/js/partials-loader.js"></script>
+    <script type="module" src="src/js/main.js"></script>
+  </body>
 </html>

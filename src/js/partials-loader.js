@@ -14,13 +14,14 @@
    ========================================================================== */
 
 (function () {
-  const includeNodes = Array.from(document.querySelectorAll('[data-include]'));
+  const includeNodes = Array.from(document.querySelectorAll("[data-include]"));
 
   const loadOne = (node) => {
-    const url = node.getAttribute('data-include');
+    const url = node.getAttribute("data-include");
     return fetch(url)
       .then((res) => {
-        if (!res.ok) throw new Error(`Gagal memuat partial: ${url} (${res.status})`);
+        if (!res.ok)
+          throw new Error(`Gagal memuat partial: ${url} (${res.status})`);
         return res.text();
       })
       .then((html) => {
@@ -36,10 +37,9 @@
     // Penanda untuk script yang telat dimuat (mis. main.js yang harus
     // mengunduh Firebase dulu) supaya tidak ketinggalan event di bawah.
     window.__partialsReady = true;
-    document.dispatchEvent(new CustomEvent('partials:ready'));
+    document.dispatchEvent(new CustomEvent("partials:ready"));
   });
 })();
-
 
 /* ==========================================================================
    ACCORDION — buka/tutup sub menu.
@@ -49,22 +49,27 @@
    otomatis dan ikut update tiap isi list berubah.
    ========================================================================== */
 (function () {
-  const toggle = (acc) => acc.classList.toggle('is-open');
+  const toggle = (acc) => acc.classList.toggle("is-open");
   const syncAria = (acc) => {
-    const head = acc.querySelector(':scope > .acc__head');
-    if (head) head.setAttribute('aria-expanded', acc.classList.contains('is-open'));
+    const head = acc.querySelector(":scope > .acc__head");
+    if (head)
+      head.setAttribute("aria-expanded", acc.classList.contains("is-open"));
   };
 
-  document.addEventListener('click', (e) => {
-    const head = e.target.closest('.acc__head');
-    if (!head || e.target.closest('.acc__actions')) return;
+  document.addEventListener("click", (e) => {
+    const head = e.target.closest(".acc__head");
+    if (!head || e.target.closest(".acc__actions")) return;
     const acc = head.parentElement;
     toggle(acc);
     syncAria(acc);
   });
 
-  document.addEventListener('keydown', (e) => {
-    if ((e.key !== 'Enter' && e.key !== ' ') || !e.target.classList.contains('acc__head')) return;
+  document.addEventListener("keydown", (e) => {
+    if (
+      (e.key !== "Enter" && e.key !== " ") ||
+      !e.target.classList.contains("acc__head")
+    )
+      return;
     e.preventDefault();
     const acc = e.target.parentElement;
     toggle(acc);
@@ -75,18 +80,22 @@
     Array.from(el.children).filter((c) => !/empty/.test(c.className)).length;
 
   const wireCounts = () => {
-    document.querySelectorAll('.acc__count[data-count-for]').forEach((badge) => {
-      const target = document.getElementById(badge.dataset.countFor);
-      if (!target || badge.dataset.wired) return;
-      badge.dataset.wired = '1';
-      const update = () => { badge.textContent = countItems(target); };
-      update();
-      new MutationObserver(update).observe(target, { childList: true });
-    });
-    document.querySelectorAll('.acc__head').forEach((h) => {
-      if (!h.hasAttribute('aria-expanded')) syncAria(h.parentElement);
+    document
+      .querySelectorAll(".acc__count[data-count-for]")
+      .forEach((badge) => {
+        const target = document.getElementById(badge.dataset.countFor);
+        if (!target || badge.dataset.wired) return;
+        badge.dataset.wired = "1";
+        const update = () => {
+          badge.textContent = countItems(target);
+        };
+        update();
+        new MutationObserver(update).observe(target, { childList: true });
+      });
+    document.querySelectorAll(".acc__head").forEach((h) => {
+      if (!h.hasAttribute("aria-expanded")) syncAria(h.parentElement);
     });
   };
 
-  document.addEventListener('partials:ready', wireCounts);
+  document.addEventListener("partials:ready", wireCounts);
 })();

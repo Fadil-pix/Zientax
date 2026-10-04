@@ -14,9 +14,12 @@
       docs/SETUP-DATABASE.md
    ========================================================================== */
 
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
-import { getFirestore, collection } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
-import { getAuth } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+import {
+  getFirestore,
+  collection,
+} from "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
 
 // TODO: ganti dengan firebaseConfig milikmu sendiri dari Firebase Console
 const firebaseConfig = {
@@ -25,7 +28,7 @@ const firebaseConfig = {
   projectId: "zientax-b93cc",
   storageBucket: "zientax-b93cc.firebasestorage.app",
   messagingSenderId: "55660481725",
-  appId: "1:55660481725:web:4ff5aae3a80d14cab27bd4"
+  appId: "1:55660481725:web:4ff5aae3a80d14cab27bd4",
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
@@ -35,15 +38,15 @@ export const auth = getAuth(firebaseApp);
 // Tugas, Kas, dan Acara Kalender disimpan di Firestore supaya semua siswa
 // lihat data yang sama. Tema & blok aktif tetap disimpan lokal (lihat
 // STORAGE_KEY_* di main.js).
-export const colTasks = collection(db, 'tasks');
-export const colCalEvents = collection(db, 'calendarEvents');
-export const colKas = collection(db, 'kasPayments');
-export const colKasTx = collection(db, 'kasTransactions');
+export const colTasks = collection(db, "tasks");
+export const colCalEvents = collection(db, "calendarEvents");
+export const colKas = collection(db, "kasPayments");
+export const colKasTx = collection(db, "kasTransactions");
 
 // Menu Taman: katalog tanaman dikelola admin (seperti tugas), sedangkan
 // kegiatan "Selasa Asri" & "Piket Harian" boleh diunggah siapa saja tanpa
 // login (lihat docs/SETUP-DATABASE.md bagian Rules untuk aturan Firestore-nya).
-export const colTamanSettings = collection(db, 'tamanSettings');
-export const colTamanPlants = collection(db, 'tamanPlants');
-export const colTamanKegiatan = collection(db, 'tamanKegiatan');
-export const colTamanPiket = collection(db, 'tamanPiket');
+export const colTamanSettings = collection(db, "tamanSettings");
+export const colTamanPlants = collection(db, "tamanPlants");
+export const colTamanKegiatan = collection(db, "tamanKegiatan");
+export const colTamanPiket = collection(db, "tamanPiket");
