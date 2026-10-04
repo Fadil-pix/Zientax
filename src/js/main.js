@@ -69,6 +69,7 @@ function registerAuthListener() {
   onAuthStateChanged(auth, (user) => {
     isAdmin = !!user;
     updateAdminUI(user);
+    if (!isAdmin) closeTamanQRModal(); // QR Menu Taman khusus admin
     renderTasks();
     renderCalendar();
     renderKas();
@@ -381,11 +382,13 @@ function openSambutanModal() {
   document.getElementById("sambutanModalOverlay").classList.add("is-open");
 }
 function closeSambutanModal() {
+  closeSambutanCrop();
   document.getElementById("sambutanModalOverlay").classList.remove("is-open");
   document.getElementById("sambutanForm").reset();
   document.getElementById("sambutanPhotoPreviewWrap").innerHTML = "";
   document.getElementById("sambutanPhotoPreviewWrap").style.display = "none";
   newSambutanPhoto = "";
+  updateSambutanRecropBtn();
 }
 function renderSambutanPhotoPreview() {
   renderPhotoGrid(
@@ -396,21 +399,154 @@ function renderSambutanPhotoPreview() {
       renderSambutanPhotoPreview();
     },
   );
+  updateSambutanRecropBtn();
+}
+function updateSambutanRecropBtn() {
+  const btn = document.getElementById("sambutanRecropBtn");
+  if (btn) btn.style.display = newSambutanPhoto && !sambutanCropper ? "inline-flex" : "none";
 }
 async function handleSambutanPhotoChange(e) {
   const file = (e.target.files || [])[0];
-  if (!file) return;
-  try {
-    newSambutanPhoto = await compressImageFile(file, 1400);
-  } catch (err) {
-    console.error(err);
-    alert("Gagal memproses foto. Coba pilih foto lain.");
-  }
   e.target.value = "";
+  if (!file) return;
+  // Fallback: kalau library crop gagal dimuat, langsung kompres seperti dulu.
+  if (typeof Cropper === "undefined") {
+    try {
+      newSambutanPhoto = await compressImageFile(file, 1400);
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memproses foto. Coba pilih foto lain.");
+    }
+    renderSambutanPhotoPreview();
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => openSambutanCrop(ev.target.result);
+  reader.onerror = () => alert("Gagal membaca file. Coba pilih foto lain.");
+  reader.readAsDataURL(file);
+}
+
+/* ---------- Crop foto sampul sambutan (Cropper.js) ----------
+   Foto yang dipilih dibuka di panel crop dulu. Admin bisa memilih rasio,
+   menggeser/zoom/putar, lalu "Terapkan Crop". Hasil crop dikompres dengan
+   batas ukuran yang sama dengan foto lain (IMAGE_TARGET_BYTES). */
+let sambutanCropper = null;
+let sambutanCropRatio = 16 / 9;
+
+function openSambutanCrop(src) {
+  if (typeof Cropper === "undefined") return;
+  closeSambutanCrop();
+  const panel = document.getElementById("sambutanCropPanel");
+  const img = document.getElementById("sambutanCropImg");
+  panel.style.display = "flex"; // harus terlihat dulu sebelum Cropper diinisialisasi
+  document.getElementById("sambutanPhotoPreviewWrap").style.display = "none";
+  img.src = src;
+  sambutanCropper = new Cropper(img, {
+    aspectRatio: sambutanCropRatio,
+    viewMode: 1,
+    autoCropArea: 1,
+    dragMode: "move",
+    background: false,
+    responsive: true,
+    toggleDragModeOnDblclick: false,
+  });
+  updateSambutanRecropBtn();
+}
+
+function closeSambutanCrop() {
+  if (sambutanCropper) {
+    sambutanCropper.destroy();
+    sambutanCropper = null;
+  }
+  const panel = document.getElementById("sambutanCropPanel");
+  if (panel) panel.style.display = "none";
+  const img = document.getElementById("sambutanCropImg");
+  if (img) img.removeAttribute("src");
+}
+
+function cancelSambutanCrop() {
+  closeSambutanCrop();
+  renderSambutanPhotoPreview(); // kembali ke foto sebelumnya (jika ada)
+}
+
+function applySambutanCrop() {
+  if (!sambutanCropper) return;
+  const canvas = sambutanCropper.getCroppedCanvas({
+    maxWidth: 2400,
+    maxHeight: 2400,
+    fillColor: "#ffffff",
+    imageSmoothingQuality: "high",
+  });
+  if (!canvas) {
+    alert("Gagal memotong foto. Coba lagi.");
+    return;
+  }
+  newSambutanPhoto = compressCanvasToDataURL(canvas, 1400);
+  closeSambutanCrop();
   renderSambutanPhotoPreview();
 }
+
+function setSambutanCropRatio(ratio, btn) {
+  sambutanCropRatio = ratio;
+  document
+    .querySelectorAll("#sambutanCropPanel [data-crop-ratio]")
+    .forEach((b) => b.classList.toggle("is-active", b === btn));
+  if (sambutanCropper) sambutanCropper.setAspectRatio(ratio);
+}
+
+function handleSambutanCropToolClick(e) {
+  const ratioBtn = e.target.closest("[data-crop-ratio]");
+  if (ratioBtn) {
+    const [a, b] = ratioBtn.dataset.cropRatio.split("/").map(Number);
+    setSambutanCropRatio(b ? a / b : NaN, ratioBtn); // NaN = bebas
+    return;
+  }
+  const toolBtn = e.target.closest("[data-crop-tool]");
+  if (!toolBtn || !sambutanCropper) return;
+  const tool = toolBtn.dataset.cropTool;
+  if (tool === "rotate-left") sambutanCropper.rotate(-90);
+  else if (tool === "rotate-right") sambutanCropper.rotate(90);
+  else if (tool === "zoom-in") sambutanCropper.zoom(0.1);
+  else if (tool === "zoom-out") sambutanCropper.zoom(-0.1);
+  else if (tool === "reset") sambutanCropper.reset();
+}
+
+/* Kompres canvas (hasil crop) jadi JPEG base64 <= IMAGE_TARGET_BYTES. */
+function compressCanvasToDataURL(srcCanvas, maxDim = 1400) {
+  const renderAt = (dim) => {
+    const scale = Math.min(1, dim / Math.max(srcCanvas.width, srcCanvas.height));
+    const w = Math.round(srcCanvas.width * scale);
+    const h = Math.round(srcCanvas.height * scale);
+    const c = document.createElement("canvas");
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(srcCanvas, 0, 0, w, h);
+    let quality = 0.8;
+    let out = c.toDataURL("image/jpeg", quality);
+    while (out.length > IMAGE_TARGET_BYTES && quality > 0.35) {
+      quality -= 0.1;
+      out = c.toDataURL("image/jpeg", quality);
+    }
+    return out;
+  };
+  let dim = maxDim;
+  let out = renderAt(dim);
+  while (out.length > IMAGE_TARGET_BYTES && dim > 300) {
+    dim = Math.round(dim * 0.75);
+    out = renderAt(dim);
+  }
+  return out;
+}
+
 async function handleSambutanFormSubmit(e) {
   e.preventDefault();
+  // Kalau admin langsung klik Simpan saat panel crop masih terbuka,
+  // terapkan crop yang sedang diatur dulu.
+  if (sambutanCropper) applySambutanCrop();
   const title = document.getElementById("sambutanTitle").value.trim();
   const caption = document.getElementById("sambutanCaption").value.trim();
   const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -862,6 +998,7 @@ function isLocalAddress() {
 }
 
 function openTamanQRModal() {
+  if (!isAdmin) return; // QR Menu Taman khusus admin
   const link = tamanMenuPermalink();
   document.getElementById("tamanQRLink").value = link;
   document.getElementById("tamanQRWarn").style.display = isLocalAddress()
@@ -2848,6 +2985,21 @@ function init() {
   document
     .getElementById("sambutanPhoto")
     .addEventListener("change", handleSambutanPhotoChange);
+  // Crop foto sampul
+  document
+    .getElementById("sambutanCropPanel")
+    .addEventListener("click", handleSambutanCropToolClick);
+  document
+    .getElementById("sambutanCropApply")
+    .addEventListener("click", applySambutanCrop);
+  document
+    .getElementById("sambutanCropCancel")
+    .addEventListener("click", cancelSambutanCrop);
+  document
+    .getElementById("sambutanRecropBtn")
+    .addEventListener("click", () => {
+      if (newSambutanPhoto) openSambutanCrop(newSambutanPhoto);
+    });
   const heroEl = document.getElementById("tamanHero");
   if (heroEl) {
     heroEl.addEventListener("click", (e) => {

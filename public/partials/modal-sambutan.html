@@ -27,11 +27,49 @@
         Foto Sampul Taman (opsional, 1 foto)
         <input type="file" id="sambutanPhoto" accept="image/*" />
       </label>
+
+      <!-- Panel crop: muncul otomatis setelah memilih foto -->
+      <div class="crop-panel" id="sambutanCropPanel" style="display: none">
+        <div class="crop-panel__stage">
+          <img id="sambutanCropImg" alt="Atur potongan foto sampul" />
+        </div>
+        <p class="crop-panel__hint">
+          Geser foto &amp; tarik sudut kotak untuk mengatur bagian yang tampil di
+          sampul taman.
+        </p>
+        <div class="crop-panel__group" role="group" aria-label="Rasio crop">
+          <button type="button" class="crop-chip is-active" data-crop-ratio="16/9">16:9</button>
+          <button type="button" class="crop-chip" data-crop-ratio="21/9">Banner 21:9</button>
+          <button type="button" class="crop-chip" data-crop-ratio="4/3">4:3</button>
+          <button type="button" class="crop-chip" data-crop-ratio="1/1">1:1</button>
+          <button type="button" class="crop-chip" data-crop-ratio="free">Bebas</button>
+        </div>
+        <div class="crop-panel__group" role="group" aria-label="Alat crop">
+          <button type="button" class="crop-chip" data-crop-tool="rotate-left" title="Putar kiri">⟲ Putar</button>
+          <button type="button" class="crop-chip" data-crop-tool="rotate-right" title="Putar kanan">⟳ Putar</button>
+          <button type="button" class="crop-chip" data-crop-tool="zoom-in" title="Perbesar">＋ Zoom</button>
+          <button type="button" class="crop-chip" data-crop-tool="zoom-out" title="Perkecil">－ Zoom</button>
+          <button type="button" class="crop-chip" data-crop-tool="reset" title="Kembalikan">Reset</button>
+        </div>
+        <div class="crop-panel__actions">
+          <button type="button" class="btn btn--sm" id="sambutanCropCancel">Batal</button>
+          <button type="button" class="btn btn--sm btn--primary" id="sambutanCropApply">Terapkan Crop</button>
+        </div>
+      </div>
+
       <div
         id="sambutanPhotoPreviewWrap"
         class="photo-grid"
         style="display: none"
       ></div>
+      <button
+        type="button"
+        class="btn btn--sm"
+        id="sambutanRecropBtn"
+        style="display: none; align-self: flex-start"
+      >
+        ✂ Crop Ulang Foto
+      </button>
       <button type="submit" class="btn btn--primary btn--block">
         Simpan Sambutan
       </button>
