@@ -31,7 +31,16 @@
   .kas-months{ padding-left:14px; }
   .kas-tx-row{ flex-direction:column; align-items:flex-start; }
   .kas-tx-row__amount{ align-self:flex-end; }
-  .taman-hero{ min-height:180px; }
+  .taman-hero{ min-height:300px; }
+  .taman-hero__text{ padding:64px 18px 20px; }
+  .taman-hero__title{ font-size:22px; }
+  .taman-hero__caption{ font-size:13px; }
+  .taman-hero__placeholder{ padding:56px 18px 0 0; }
+  .taman-hero__placeholder-icon{ font-size:72px; }
+  .taman-hero__stats{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  .taman-hero__stat{ min-width:0; padding:7px 10px; }
+  .taman-hero__stat strong{ font-size:17px; }
+  .taman-hero__cta .btn{ flex:1 1 auto; text-align:center; }
   .plant-grid{ grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); }
 }
 @media (max-width: 480px){

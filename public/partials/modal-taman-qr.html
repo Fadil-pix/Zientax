@@ -1,0 +1,31 @@
+  <!-- ============ MODAL: QR CODE MENU TAMAN ============ -->
+  <!-- QR ini berisi link ke website dengan ?menu=taman. Saat dipindai,
+       website langsung membuka menu Taman (hero section). Cetak & pasang
+       di taman supaya pengunjung bisa melihat info taman kelas. -->
+  <div class="modal-overlay" id="tamanQRModalOverlay">
+    <div class="modal">
+      <div class="modal__head">
+        <h3>QR Code Menu Taman</h3>
+        <button class="icon-btn" id="closeTamanQRModal">&times;</button>
+      </div>
+      <div class="taman-qr__body">
+        <div class="taman-qr__code" id="tamanQRCode"></div>
+        <p class="taman-qr__hint">Cetak &amp; pasang QR ini di taman. Saat dipindai, pengunjung langsung diarahkan ke menu Taman Kelas.</p>
+
+        <div class="taman-qr__link">
+          <input type="text" id="tamanQRLink" readonly>
+          <button type="button" class="btn btn--sm" id="copyTamanQRLink">Salin</button>
+        </div>
+
+        <p class="taman-qr__warn" id="tamanQRWarn" style="display:none;">
+          ⚠️ Website sedang dibuka dari alamat lokal, jadi QR ini hanya bisa dibuka di komputer ini.
+          Buka website dari alamat hosting (online) dulu, lalu buat QR dari sana sebelum dicetak.
+        </p>
+
+        <div class="taman-qr__actions">
+          <button type="button" class="btn" id="downloadTamanQR">Unduh Gambar QR</button>
+          <button type="button" class="btn btn--primary" id="printTamanQR">Cetak Poster</button>
+        </div>
+      </div>
+    </div>
+  </div>

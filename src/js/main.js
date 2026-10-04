@@ -325,6 +325,7 @@ function subscribeTamanPlants(){
     tamanPlants = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a,b) => (a.name||'').localeCompare(b.name||''));
     renderPlantGrid();
+    updateTamanHeroStats();
     maybeOpenPendingPlantDeepLink();
   }, (err)=>{
     console.error(err);
@@ -655,12 +656,174 @@ function deletePlantFromDetail(){
   deletePlant(id);
 }
 
+/* ---------- Hero Section: statistik & tombol aksi ---------- */
+function updateTamanHeroStats(){
+  const set = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  set('tamanStatPlants', tamanPlants.length);
+  set('tamanStatKegiatan', selasaAsriList.length);
+  set('tamanStatPiket', piketHarianList.length);
+}
+
+/* Buka accordion section tertentu di menu Taman lalu scroll ke sana. */
+function openTamanSection(accId){
+  const acc = document.getElementById(accId);
+  if (!acc) return;
+  acc.classList.add('is-open');
+  const head = acc.querySelector(':scope > .acc__head');
+  if (head) head.setAttribute('aria-expanded', 'true');
+  acc.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ---------- QR Code Menu Taman ----------
+   Isi QR = link website + ?menu=taman. Saat dipindai, handleMenuDeepLink()
+   langsung membuka menu Taman. Cocok dicetak & dipasang di area taman. */
+function tamanMenuPermalink(){
+  const url = new URL(location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('menu', 'taman');
+  return url.toString();
+}
+
+function isLocalAddress(){
+  const h = location.hostname;
+  return location.protocol === 'file:' || h === 'localhost' || h === '127.0.0.1' || h === '' ||
+    /^192\.168\./.test(h) || /^10\./.test(h) || h.endsWith('.local');
+}
+
+function openTamanQRModal(){
+  const link = tamanMenuPermalink();
+  document.getElementById('tamanQRLink').value = link;
+  document.getElementById('tamanQRWarn').style.display = isLocalAddress() ? 'block' : 'none';
+
+  const holder = document.getElementById('tamanQRCode');
+  holder.innerHTML = '';
+  if (typeof QRCode === 'undefined'){
+    holder.innerHTML = '<p class="empty-note">Gagal memuat generator QR Code (cek koneksi internet).</p>';
+  } else {
+    // Resolusi tinggi supaya tetap tajam saat dicetak besar (poster).
+    new QRCode(holder, {
+      text: link,
+      width: 600,
+      height: 600,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  }
+  document.getElementById('tamanQRModalOverlay').classList.add('is-open');
+}
+
+function closeTamanQRModal(){
+  document.getElementById('tamanQRModalOverlay').classList.remove('is-open');
+}
+
+async function copyTamanQRLink(){
+  const input = document.getElementById('tamanQRLink');
+  const btn = document.getElementById('copyTamanQRLink');
+  try {
+    await navigator.clipboard.writeText(input.value);
+  } catch(_){
+    input.select();
+    document.execCommand('copy');
+  }
+  btn.textContent = 'Tersalin ✓';
+  setTimeout(()=>{ btn.textContent = 'Salin'; }, 1500);
+}
+
+function getTamanQRCanvas(){
+  return document.querySelector('#tamanQRCode canvas');
+}
+
+/* Unduh PNG: QR + margin putih + judul di bawahnya (siap tempel). */
+function downloadTamanQR(){
+  const qr = getTamanQRCanvas();
+  if (!qr) return;
+  const pad = 60, textH = 130, size = qr.width;
+  const c = document.createElement('canvas');
+  c.width = size + pad * 2;
+  c.height = size + pad * 2 + textH;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(qr, pad, pad, size, size);
+  ctx.fillStyle = '#1d3a24';
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 46px Inter, sans-serif';
+  ctx.fillText((tamanSambutan.title || 'Taman Kelas').slice(0, 32), c.width / 2, size + pad + 70);
+  ctx.fillStyle = '#555555';
+  ctx.font = '28px Inter, sans-serif';
+  ctx.fillText('Scan untuk mengenal taman kelas kami 🌿', c.width / 2, size + pad + 120);
+
+  const a = document.createElement('a');
+  a.href = c.toDataURL('image/png');
+  a.download = 'qr-menu-taman.png';
+  a.click();
+}
+
+/* Cetak poster A4 berisi judul, QR besar, dan petunjuk scan. */
+function printTamanQR(){
+  const qr = getTamanQRCanvas();
+  if (!qr) return;
+  const dataURL = qr.toDataURL('image/png');
+  const title = escapeHTML(tamanSambutan.title || 'Selamat Datang di Taman Kelas');
+  const caption = escapeHTML(tamanSambutan.caption || '');
+  const logo = new URL('assets/images/logo.png', location.href).href;
+  const win = window.open('', '_blank', 'width=620,height=820');
+  if (!win){ alert('Popup diblokir browser. Izinkan popup untuk mencetak poster QR.'); return; }
+  win.document.write(`<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><title>Poster QR Menu Taman</title>
+    <style>
+      @page{ size:A4; margin:14mm; }
+      *{ box-sizing:border-box; }
+      body{ font-family:Inter, Arial, sans-serif; margin:0; color:#1d3a24; }
+      .poster{ border:6px solid #4a742a; border-radius:24px; padding:36px 32px; text-align:center; min-height:calc(100vh - 4px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; }
+      .logo{ width:72px; height:72px; object-fit:contain; }
+      .eyebrow{ font-size:14px; letter-spacing:.12em; text-transform:uppercase; color:#4a742a; font-weight:700; }
+      h1{ margin:0; font-size:34px; line-height:1.2; }
+      .caption{ margin:0; font-size:15px; color:#555; max-width:440px; line-height:1.5; }
+      .qr{ width:320px; height:320px; padding:14px; border:2px dashed #9ec27a; border-radius:16px; }
+      .scan{ font-size:22px; font-weight:700; margin:0; }
+      .hint{ font-size:13px; color:#777; margin:0; }
+      @media print{ .poster{ min-height:auto; height:265mm; } }
+    </style></head><body>
+      <div class="poster">
+        <img class="logo" src="${logo}" alt="" onerror="this.style.display='none'">
+        <div class="eyebrow">🌱 Taman Kelas · XI PPLG A</div>
+        <h1>${title}</h1>
+        ${caption ? `<p class="caption">${caption}</p>` : ''}
+        <img class="qr" src="${dataURL}" alt="QR Menu Taman">
+        <p class="scan">📱 Scan untuk mengenal taman kami</p>
+        <p class="hint">Arahkan kamera HP ke QR Code di atas</p>
+      </div>
+      <script>window.onload = () => setTimeout(() => window.print(), 300);<\/script>
+    </body></html>`);
+  win.document.close();
+}
+
+/* Jika website dibuka dengan ?menu=<nama> (mis. hasil scan QR Menu Taman),
+   langsung pindah ke menu tersebut. Khusus taman, Daftar Tanaman dibuka. */
+function handleMenuDeepLink(){
+  const menu = new URLSearchParams(location.search).get('menu');
+  if (!menu || !document.getElementById('view-' + menu)) return;
+  setActiveView(menu);
+  if (menu === 'taman'){
+    const acc = document.getElementById('accPlants');
+    if (acc){
+      acc.classList.add('is-open');
+      const head = acc.querySelector(':scope > .acc__head');
+      if (head) head.setAttribute('aria-expanded', 'true');
+    }
+  }
+  window.scrollTo({ top: 0 });
+}
+
 /* ---------- Kegiatan "Selasa Asri" ---------- */
 function subscribeTamanKegiatan(){
   onSnapshot(colTamanKegiatan, (snap)=>{
     selasaAsriList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
     renderSelasaAsriList();
+    updateTamanHeroStats();
   }, (err)=>{
     console.error(err);
     showDbError('Gagal memuat kegiatan Selasa Asri dari database. Cek koneksi internet.');
@@ -684,6 +847,7 @@ function subscribeTamanPiket(){
     piketHarianList = snap.docs.map(d => ({ id: d.id, ...d.data() }))
       .sort((a,b) => (b.date||'').localeCompare(a.date||'') || (b.createdAt||0)-(a.createdAt||0));
     renderPiketHarianList();
+    updateTamanHeroStats();
   }, (err)=>{
     console.error(err);
     showDbError('Gagal memuat data piket harian dari database. Cek koneksi internet.');
@@ -2072,12 +2236,26 @@ function init(){
   const heroEl = document.getElementById('tamanHero');
   if (heroEl){
     heroEl.addEventListener('click', (e)=>{
-      if (e.target.closest('#editSambutanBtn')) return;
+      if (e.target.closest('button')) return; // tombol di hero punya aksinya sendiri
       if (tamanSambutan && tamanSambutan.photo){
         openPhotoLightbox([tamanSambutan.photo], 0, tamanSambutan.title || 'Foto Taman Kelas', tamanSambutan.caption || '', true);
       }
     });
   }
+  // Tombol CTA hero
+  document.getElementById('tamanHeroExplore').addEventListener('click', ()=> openTamanSection('accPlants'));
+  document.getElementById('tamanHeroKegiatan').addEventListener('click', ()=> openTamanSection('accSelasa'));
+  updateTamanHeroStats();
+
+  // QR Menu Taman
+  document.getElementById('openTamanQRBtn').addEventListener('click', openTamanQRModal);
+  document.getElementById('closeTamanQRModal').addEventListener('click', closeTamanQRModal);
+  document.getElementById('tamanQRModalOverlay').addEventListener('click', (e)=>{
+    if (e.target.id === 'tamanQRModalOverlay') closeTamanQRModal();
+  });
+  document.getElementById('copyTamanQRLink').addEventListener('click', copyTamanQRLink);
+  document.getElementById('downloadTamanQR').addEventListener('click', downloadTamanQR);
+  document.getElementById('printTamanQR').addEventListener('click', printTamanQR);
 
   // Daftar Tanaman
   renderPlantGrid(); // render awal (kosong) sebelum data Firestore masuk
@@ -2122,6 +2300,9 @@ function init(){
   });
   document.getElementById('piketForm').addEventListener('submit', handlePiketFormSubmit);
   document.getElementById('piketPhoto').addEventListener('change', handlePiketPhotoChange);
+
+  // Deep link menu (?menu=taman) — dipakai QR Menu Taman yang dipasang di taman.
+  handleMenuDeepLink();
 }
 
 // Ditunggu sampai partials-loader.js selesai menyuntikkan semua HTML

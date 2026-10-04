@@ -15,7 +15,7 @@ Zientax-rapi/
 │       ├── view-jadwal.html
 │       ├── view-kas.html
 │       ├── view-taman.html
-│       └── modal-*.html       # satu file per modal (11 modal)
+│       └── modal-*.html       # satu file per modal (12 modal, termasuk modal-taman-qr.html)
 │
 ├── src/
 │   ├── css/                   # dipecah per kategori, urutan <link> PENTING
