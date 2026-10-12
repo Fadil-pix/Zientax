@@ -497,8 +497,15 @@ function setSambutanCropRatio(ratio, btn) {
 function handleSambutanCropToolClick(e) {
   const ratioBtn = e.target.closest("[data-crop-ratio]");
   if (ratioBtn) {
-    const [a, b] = ratioBtn.dataset.cropRatio.split("/").map(Number);
-    setSambutanCropRatio(b ? a / b : NaN, ratioBtn); // NaN = bebas
+    const val = ratioBtn.dataset.cropRatio;
+    let ratio;
+    if (val === "free") {
+      ratio = NaN;
+    } else {
+      const parts = val.split("/").map(Number);
+      ratio = parts.length === 2 && parts[1] ? parts[0] / parts[1] : NaN;
+    }
+    setSambutanCropRatio(ratio, ratioBtn);
     return;
   }
   const toolBtn = e.target.closest("[data-crop-tool]");

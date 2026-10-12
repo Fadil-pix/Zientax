@@ -91,31 +91,32 @@
     min-height: 300px;
   }
   .taman-hero__text {
-    padding: 64px 18px 20px;
+    padding: 20px 18px 20px;
+    margin-top: 48px;
   }
   .taman-hero__title {
-    font-size: 22px;
+    font-size: 20px;
   }
   .taman-hero__caption {
-    font-size: 13px;
+    font-size: 12.5px;
   }
   .taman-hero__placeholder {
-    padding: 56px 18px 0 0;
+    padding: 0 16px 18px 0;
   }
   .taman-hero__placeholder-icon {
-    font-size: 72px;
+    font-size: 60px;
   }
   .taman-hero__stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
+    gap: 6px;
   }
   .taman-hero__stat {
     min-width: 0;
-    padding: 7px 10px;
+    padding: 6px 9px;
   }
   .taman-hero__stat strong {
-    font-size: 17px;
+    font-size: 15px;
   }
   .taman-hero__cta .btn {
     flex: 1 1 auto;
